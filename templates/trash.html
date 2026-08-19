@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}Trash Archives — TalkToText Pro{% endblock %}
+{% block page_eyebrow %}Recovery & Purge{% endblock %}
+{% block page_title %}Trash Archives{% endblock %}
+
+{% block content %}
+<div style="display: flex; flex-direction: column; gap: 20px; max-width: 800px;">
+
+  {% if meetings %}
+    <div style="display: flex; flex-direction: column; gap: 12px;">
+      {% for meeting in meetings %}
+        <div class="panel" style="padding: 18px 22px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+          <div>
+            <h3 style="font-family: var(--serif); font-size: 16.5px; font-weight: 500; color: var(--paper); margin-bottom: 4px;">
+              {{ meeting.title }}
+            </h3>
+            <div style="font-family: var(--mono); font-size: 11.5px; color: var(--paper-dim);">
+              Deleted: {{ meeting.created_at }} • {{ meeting.language }}
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 8px;">
+            <form method="POST" action="{{ url_for('restore_meeting_route', meeting_id=meeting.id) }}">
+              <button type="submit" class="btn btn-ghost btn-sm">
+                <i data-lucide="rotate-ccw" style="color: var(--sage);"></i>
+                <span>Restore</span>
+              </button>
+            </form>
+            <form id="permDel_{{ meeting.id }}" method="POST" action="{{ url_for('permanent_delete_route', meeting_id=meeting.id) }}">
+              <button type="button" onclick="confirmAction({ title: 'Permanently Delete Meeting?', message: 'This meeting note and audio file will be permanently removed. This action cannot be undone.', confirmText: 'Delete Forever', confirmType: 'danger', onConfirm: () => document.getElementById('permDel_{{ meeting.id }}').submit() })" class="btn btn-danger-ghost btn-sm">
+                <i data-lucide="trash-2"></i>
+                <span>Delete Permanently</span>
+              </button>
+            </form>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="panel" style="padding: 48px; text-align: center; color: var(--paper-dim);">
+      <div style="width: 44px; height: 44px; border-radius: 12px; background: var(--surface-2); border: 1px solid var(--line); display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; color: var(--paper-dim);">
+        <i data-lucide="trash" style="width: 20px; height: 20px;"></i>
+      </div>
+      <h3 style="font-family: var(--serif); font-size: 18px; font-weight: 500; color: var(--paper); margin-bottom: 4px;">Trash is empty</h3>
+      <p style="font-size: 13px;">No deleted meetings are in your trash archive.</p>
+    </div>
+  {% endif %}
+
+</div>
+{% endblock %}

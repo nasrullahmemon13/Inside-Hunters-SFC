@@ -1,0 +1,27 @@
+============================================================
+TALKTOTEXT PRO — MEETING INTELLIGENCE REPORT
+============================================================
+Title:    Test Q3 Strategy Sync
+Date:     2026-08-18 10:00:00
+Language: English
+Duration: 20 minutes
+------------------------------------------------------------
+
+--- EXECUTIVE SUMMARY ---
+
+Test meeting summary for bulk export validation.
+
+--- KEY DISCUSSION POINTS ---
+
+• Discussion on scale
+• Database performance
+
+--- AGREED DECISIONS ---
+
+✓ Approved Q3 hiring plan
+
+--- ACTION ITEMS & DELIVERABLES ---
+
+[Pending] Deploy to staging (Assignee: Ali, Due: Friday)
+
+--- SPEAKER TRANSCRIPT ---

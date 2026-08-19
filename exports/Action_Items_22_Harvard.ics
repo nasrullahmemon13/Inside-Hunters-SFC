@@ -1,0 +1,15 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//TalkToText Pro//Meeting Deliverables//EN
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+BEGIN:VEVENT
+UID:meeting-22-recap@talktotext.pro
+DTSTAMP:20260817T063414Z
+DTSTART:20260817T063414Z
+DTEND:20260817T063414Z
+SUMMARY:Recap: Harvard
+DESCRIPTION:The meeting featured a casual discussion centered around food preferences and sensory experiences related to various dishes.
+STATUS:CONFIRMED
+END:VEVENT
+END:VCALENDAR

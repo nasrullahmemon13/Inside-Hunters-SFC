@@ -1,0 +1,215 @@
+{% extends "base.html" %}
+
+{% block title %}Meeting History — TalkToText Pro{% endblock %}
+
+{% block content %}
+<div style="max-width: 1000px; display: flex; flex-direction: column; gap: 20px;">
+
+  <!-- Header & Search Controls -->
+  <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+    <h1 style="font-size: 22px; font-weight: 700; color: var(--text-main);">Meeting History</h1>
+
+    <div style="display: flex; align-items: center; gap: 10px;">
+      <!-- Search -->
+      <form method="GET" action="{{ url_for('history') }}" style="position: relative;">
+        <input type="text" name="q" value="{{ search_query or '' }}" placeholder="Search meetings..." style="padding: 8px 12px 8px 34px; border-radius: 8px; background: var(--bg-card); border: 1px solid var(--border-color); color: var(--text-main); font-size: 13px; outline: none; width: 220px;">
+        <i data-lucide="search" style="width: 14px; height: 14px; position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-dim);"></i>
+      </form>
+
+      <!-- Bulk Export Trigger -->
+      <button type="button" id="bulkExportBtn" onclick="openBulkExportModal()" class="btn btn-amber btn-sm" style="display: none; align-items: center; gap: 6px;">
+        <i data-lucide="archive" style="width: 14px; height: 14px;"></i>
+        <span>Export Selected (<span id="selectedCountSpan">0</span>)</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Filter Tabs & Bulk Actions Bar -->
+  <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+    <div style="display: flex; gap: 6px;">
+      <a href="{{ url_for('history') }}" class="btn btn-sm" style="{% if not selected_filter %}background: var(--bg-card); border: 1px solid var(--amber, #F0917A); color: var(--amber, #F0917A);{% else %}background: var(--bg-card); border: 1px solid var(--border-color); color: var(--text-muted);{% endif %}">
+        All
+      </a>
+      <a href="{{ url_for('history') }}?filter=completed" class="btn btn-sm" style="background: var(--bg-card); border: 1px solid var(--border-color); color: var(--text-muted);">
+        Completed
+      </a>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 10px; font-size: 12px; color: var(--text-muted);">
+      <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+        <input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll(this)" style="cursor: pointer;">
+        <span>Select All</span>
+      </label>
+    </div>
+  </div>
+
+  <!-- History Table Panel -->
+  <form id="bulkExportForm" action="/export/bulk" method="POST">
+    <div class="panel">
+      <div style="overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 13px;">
+          <thead>
+            <tr style="border-bottom: 1px solid var(--border-color); color: var(--text-muted); font-size: 11px; text-transform: uppercase; font-family: var(--font-mono);">
+              <th style="padding: 12px 18px; width: 36px;"></th>
+              <th style="padding: 12px 18px; width: 36px;"></th>
+              <th style="padding: 12px 18px;">Meeting Title</th>
+              <th style="padding: 12px 18px;">Date</th>
+              <th style="padding: 12px 18px;">Duration</th>
+              <th style="padding: 12px 18px;">Status</th>
+              <th style="padding: 12px 18px; text-align: right;">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% if meetings %}
+              {% for m in meetings %}
+                <tr style="border-bottom: 1px solid var(--border-color);">
+                  <td style="padding: 14px 18px; width: 36px;">
+                    <input type="checkbox" name="meeting_ids" value="{{ m.id }}" class="meeting-select-cb" onchange="updateSelectedCount()" style="cursor: pointer;">
+                  </td>
+                  <td style="padding: 14px 18px; width: 36px;">
+                    <i data-lucide="file-text" style="width: 16px; height: 16px; color: var(--amber, #F0917A);"></i>
+                  </td>
+                  <td style="padding: 14px 18px; font-weight: 600;">
+                    <a href="{{ url_for('meeting_detail', meeting_id=m.id) }}" style="color: var(--text-main); text-decoration: none;">
+                      {{ m.title }}
+                    </a>
+                  </td>
+                  <td style="padding: 14px 18px; color: var(--text-muted); font-size: 12px;">{{ m.created_at[:16] }}</td>
+                  <td style="padding: 14px 18px; font-family: var(--font-mono); color: var(--text-muted);">{{ (m.duration_seconds / 60)|round|int }} min</td>
+                  <td style="padding: 14px 18px;">
+                    <span class="status-badge status-badge-completed">Completed</span>
+                  </td>
+                  <td style="padding: 14px 18px; text-align: right; width: 80px;">
+                    <button type="button" onclick="toggleFav({{ m.id }}, this)" style="background: none; border: none; color: {% if m.is_favorite %}#F59E0B{% else %}var(--text-dim){% endif %}; cursor: pointer; font-size: 16px;">
+                      {% if m.is_favorite %}★{% else %}☆{% endif %}
+                    </button>
+                  </td>
+                </tr>
+              {% endfor %}
+            {% else %}
+              <tr>
+                <td colspan="7" style="text-align: center; padding: 48px 20px; color: var(--text-muted);">
+                  <i data-lucide="file-audio" style="width: 32px; height: 32px; color: var(--amber, #F0917A); margin-bottom: 8px; display: inline-block;"></i>
+                  <div style="font-size: 15px; font-weight: 600; color: var(--text-main); margin-bottom: 4px;">No meeting records found</div>
+                  <p style="font-size: 12.5px; color: var(--text-dim); margin-bottom: 16px;">Upload an audio file or record your meeting to generate AI notes automatically.</p>
+                  <a href="{{ url_for('upload_page') }}" class="btn btn-amber btn-sm" style="display: inline-flex; align-items: center; gap: 6px;">
+                    <i data-lucide="upload" style="width: 14px; height: 14px;"></i>
+                    <span>Upload Recording</span>
+                  </a>
+                </td>
+              </tr>
+            {% endif %}
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Results Footer -->
+      <div style="display: flex; justify-content: space-between; align-items: center; padding: 14px 20px; font-size: 12px; color: var(--text-muted); border-top: 1px solid var(--border-color); flex-wrap: wrap; gap: 10px;">
+        <div>Showing {{ meetings|length }} meeting{{ 's' if meetings|length != 1 else '' }} in database</div>
+        <div style="display: flex; gap: 4px;">
+          <span style="font-family: var(--font-mono); font-size: 11px; color: var(--amber, #F0917A); background: rgba(240, 145, 122, 0.12); padding: 3px 10px; border-radius: 100px;">Bulk ZIP Ready</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bulk Export Modal -->
+    <div class="modal-overlay" id="bulkExportModal">
+      <div class="modal-box" style="text-align: left; max-width: 480px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+          <div style="font-family: var(--font-serif); font-size: 20px; font-weight: 600; color: var(--text-main);">Bulk Export ZIP</div>
+          <button type="button" onclick="closeBulkExportModal()" style="background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 18px;">✕</button>
+        </div>
+        <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 18px;">
+          Export selected meeting intelligence briefs into a consolidated ZIP archive. Choose your desired output formats:
+        </p>
+
+        <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 22px;">
+          <label style="display: flex; align-items: center; gap: 10px; padding: 10px 12px; background: var(--bg-surface-3, #1F151D); border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer; font-size: 13px;">
+            <input type="checkbox" name="formats" value="pdf" checked style="cursor: pointer;">
+            <div>
+              <span style="font-weight: 600; color: var(--text-main);">PDF Documents</span>
+              <span style="font-size: 11px; color: var(--text-muted); display: block;">Formatted reports with executive summaries & action items</span>
+            </div>
+          </label>
+          <label style="display: flex; align-items: center; gap: 10px; padding: 10px 12px; background: var(--bg-surface-3, #1F151D); border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer; font-size: 13px;">
+            <input type="checkbox" name="formats" value="docx" checked style="cursor: pointer;">
+            <div>
+              <span style="font-weight: 600; color: var(--text-main);">Word Documents (.docx)</span>
+              <span style="font-size: 11px; color: var(--text-muted); display: block;">Editable Microsoft Word documents</span>
+            </div>
+          </label>
+          <label style="display: flex; align-items: center; gap: 10px; padding: 10px 12px; background: var(--bg-surface-3, #1F151D); border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer; font-size: 13px;">
+            <input type="checkbox" name="formats" value="md" checked style="cursor: pointer;">
+            <div>
+              <span style="font-weight: 600; color: var(--text-main);">Markdown (.md)</span>
+              <span style="font-size: 11px; color: var(--text-muted); display: block;">Clean markdown for Notion, Obsidian, GitHub</span>
+            </div>
+          </label>
+          <label style="display: flex; align-items: center; gap: 10px; padding: 10px 12px; background: var(--bg-surface-3, #1F151D); border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer; font-size: 13px;">
+            <input type="checkbox" name="formats" value="txt" style="cursor: pointer;">
+            <div>
+              <span style="font-weight: 600; color: var(--text-main);">Plain Text (.txt)</span>
+              <span style="font-size: 11px; color: var(--text-muted); display: block;">Universal text file</span>
+            </div>
+          </label>
+          <label style="display: flex; align-items: center; gap: 10px; padding: 10px 12px; background: var(--bg-surface-3, #1F151D); border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer; font-size: 13px;">
+            <input type="checkbox" name="formats" value="json" style="cursor: pointer;">
+            <div>
+              <span style="font-weight: 600; color: var(--text-main);">Structured JSON</span>
+              <span style="font-size: 11px; color: var(--text-muted); display: block;">Raw machine-readable sentiment, tasks & decisions</span>
+            </div>
+          </label>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 10px;">
+          <button type="button" onclick="closeBulkExportModal()" class="btn btn-outline btn-sm">Cancel</button>
+          <button type="submit" class="btn btn-amber btn-sm">Download ZIP Archive</button>
+        </div>
+      </div>
+    </div>
+  </form>
+
+</div>
+
+<script>
+  function toggleFav(meetingId, btn) {
+    fetch(`/meeting/${meetingId}/favorite`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' }
+    })
+    .then(r => r.json())
+    .then(data => {
+      btn.textContent = data.is_favorite ? '★' : '☆';
+      btn.style.color = data.is_favorite ? '#F59E0B' : 'var(--text-dim)';
+      showToast(data.is_favorite ? 'Pinned to favorites' : 'Removed from favorites', 'info', 'Favorites');
+    });
+  }
+
+  function toggleSelectAll(masterCb) {
+    const cbs = document.querySelectorAll('.meeting-select-cb');
+    cbs.forEach(cb => cb.checked = masterCb.checked);
+    updateSelectedCount();
+  }
+
+  function updateSelectedCount() {
+    const selected = document.querySelectorAll('.meeting-select-cb:checked');
+    const btn = document.getElementById('bulkExportBtn');
+    const span = document.getElementById('selectedCountSpan');
+    if (selected.length > 0) {
+      btn.style.display = 'inline-flex';
+      span.textContent = selected.length;
+    } else {
+      btn.style.display = 'none';
+      span.textContent = '0';
+    }
+  }
+
+  function openBulkExportModal() {
+    document.getElementById('bulkExportModal')?.classList.add('show');
+  }
+
+  function closeBulkExportModal() {
+    document.getElementById('bulkExportModal')?.classList.remove('show');
+  }
+</script>
+{% endblock %}

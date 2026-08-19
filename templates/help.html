@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block title %}Help Center — TalkToText Pro{% endblock %}
+
+{% block content %}
+<div style="max-width: 680px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px;">
+
+  <div class="panel" style="padding: 28px;">
+    <h1 style="font-size: 20px; font-weight: 700; color: var(--text-main); margin-bottom: 2px;">Help Center</h1>
+    <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 18px;">How can we help you?</p>
+
+    <!-- Search Input -->
+    <div style="position: relative; margin-bottom: 24px;">
+      <input type="text" placeholder="Search for help..." style="width: 100%; padding: 10px 14px 10px 38px; border-radius: 9px; background: var(--bg-input); border: 1px solid var(--border-color); color: var(--text-main); font-size: 13px; outline: none;">
+      <i data-lucide="search" style="width: 16px; height: 16px; position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-dim);"></i>
+    </div>
+
+    <!-- Popular Topics (Exact Mockup Match) -->
+    <div style="font-size: 13px; font-weight: 600; color: var(--text-main); margin-bottom: 12px;">Popular topics</div>
+
+    <div style="display: flex; flex-direction: column; gap: 8px;">
+      <a href="#" style="display: flex; align-items: center; justify-content: space-between; padding: 11px 14px; border-radius: 8px; background: var(--bg-input); border: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted);">
+        <span>How to upload a meeting</span>
+        <i data-lucide="chevron-right" style="width: 14px; height: 14px; color: var(--text-dim);"></i>
+      </a>
+
+      <a href="#" style="display: flex; align-items: center; justify-content: space-between; padding: 11px 14px; border-radius: 8px; background: var(--bg-input); border: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted);">
+        <span>Supported audio formats</span>
+        <i data-lucide="chevron-right" style="width: 14px; height: 14px; color: var(--text-dim);"></i>
+      </a>
+
+      <a href="#" style="display: flex; align-items: center; justify-content: space-between; padding: 11px 14px; border-radius: 8px; background: var(--bg-input); border: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted);">
+        <span>How accurate is transcription?</span>
+        <i data-lucide="chevron-right" style="width: 14px; height: 14px; color: var(--text-dim);"></i>
+      </a>
+
+      <a href="#" style="display: flex; align-items: center; justify-content: space-between; padding: 11px 14px; border-radius: 8px; background: var(--bg-input); border: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted);">
+        <span>How does AI summarization work?</span>
+        <i data-lucide="chevron-right" style="width: 14px; height: 14px; color: var(--text-dim);"></i>
+      </a>
+
+      <a href="#" style="display: flex; align-items: center; justify-content: space-between; padding: 11px 14px; border-radius: 8px; background: var(--bg-input); border: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted);">
+        <span>Can I edit the generated notes?</span>
+        <i data-lucide="chevron-right" style="width: 14px; height: 14px; color: var(--text-dim);"></i>
+      </a>
+    </div>
+
+    <!-- Contact Support Button -->
+    <div style="margin-top: 24px; padding-top: 18px; border-top: 1px solid var(--border-color);">
+      <button type="button" class="btn btn-ghost" style="width: 100%; border-radius: 9px; padding: 10px;">
+        <i data-lucide="headphones" style="width: 15px; height: 15px; color: var(--cyan-primary);"></i>
+        <span>Contact Support</span>
+      </button>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,1191 @@
+<!DOCTYPE html>
+<html lang="en" class="{% if current_user and current_user.theme_preference == 'light' %}light{% else %}dark{% endif %}">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}TalkToText Pro — AI Meeting Intelligence{% endblock %}</title>
+  <meta name="description" content="AI-Powered Meeting Intelligence. Transcribe conversations, organize key points, extract decisions and action items automatically.">
+
+  <!-- PWA & Mobile Web App Meta -->
+  <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+  <meta name="theme-color" content="#1B1219">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="TalkToText Pro">
+
+  <!-- Google Fonts: Instrument Serif, Work Sans, IBM Plex Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Work+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script>
+    if (typeof lucide === 'undefined') {
+      document.write('<script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"><\/script>');
+    }
+  </script>
+
+  <style>
+    :root {
+      /* 🥇 Editorial Velvet & Amber Theme Tokens */
+      --ink: #1B1219;
+      --panel: #241820;
+      --panel-2: #2C1D26;
+      --paper: #F8F1E7;
+      --paper-dim: #C9B7BA;
+      --amber: #F0917A;
+      --gold: #E0AD62;
+      --teal: #9DC198;
+      --line: #40303A;
+
+      /* Semantic Theme Variables Mapped to Editorial Velvet */
+      --bg-main: #1B1219;
+      --bg-sidebar: rgba(36, 24, 32, 0.75);
+      --bg-card: #241820;
+      --bg-card-hover: #2C1D26;
+      --bg-input: #1F151D;
+      --bg-surface-3: #2C1D26;
+      --bg-elevated: #2C1D26;
+      
+      --border-color: #40303A;
+      --border-bright: #58414F;
+      
+      --text-main: #F8F1E7;
+      --text-secondary: #C9B7BA;
+      --text-muted: #C9B7BA;
+      --text-dim: #8A7780;
+      
+      /* Primary Amber/Coral Accent (#F0917A) */
+      --cyan-primary: {{ (current_user and current_user.accent_color) or '#F0917A' }};
+      --cyan-gradient: linear-gradient(135deg, {{ (current_user and current_user.accent_color) or '#F0917A' }} 0%, #E0AD62 100%);
+      --cyan-hover: #F3A691;
+      --cyan-dim: rgba(240, 145, 122, 0.16);
+      --cyan-soft: rgba(240, 145, 122, 0.16);
+      --cyan-glow: 0 0 20px rgba(240, 145, 122, 0.35);
+      
+      --blue-primary: #E0AD62;
+      --blue-dim: rgba(224, 173, 98, 0.15);
+      
+      --success-green: #9DC198;
+      --success-dim: rgba(157, 193, 152, 0.16);
+      
+      --warning-amber: #E0AD62;
+      --warning-dim: rgba(224, 173, 98, 0.15);
+      
+      --danger-red: #E16D72;
+      --danger-dim: rgba(225, 109, 114, 0.15);
+      
+      --purple-accent: #C47AC0;
+      --purple-dim: rgba(196, 122, 192, 0.15);
+      
+      --font-sans: 'Work Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-serif: 'Instrument Serif', Georgia, serif;
+      --font-mono: 'IBM Plex Mono', monospace;
+      --sidebar-w: 250px;
+    }
+
+    /* 🌗 2026 Flagship: Adaptive Light Mode (Editorial Cream & Warm Amber) */
+    html.light {
+      --ink: #FAFAF8;
+      --panel: #FFFFFF;
+      --panel-2: #F3F1EC;
+      --paper: #1B1219;
+      --paper-dim: #6B5E66;
+      --amber: #D96E54;
+      --gold: #B88538;
+      --teal: #4F8049;
+      --line: #E5DDD3;
+
+      --bg-main: #FAFAF8;
+      --bg-sidebar: #FFFFFF;
+      --bg-card: #FFFFFF;
+      --bg-card-hover: #F6F4EE;
+      --bg-input: #F3F0EA;
+      --bg-surface-3: #ECE7DE;
+      --bg-elevated: #FFFFFF;
+      
+      --border-color: #E2DBD0;
+      --border-bright: #D0C6B8;
+      
+      --text-main: #1B1219;
+      --text-secondary: #5F535B;
+      --text-muted: #6B5E66;
+      --text-dim: #94858E;
+      
+      --cyan-primary: #D96E54;
+      --cyan-hover: #C55E45;
+      --cyan-gradient: linear-gradient(135deg, #D96E54 0%, #B88538 100%);
+      --cyan-dim: rgba(217, 110, 84, 0.12);
+      --cyan-soft: rgba(217, 110, 84, 0.12);
+      --cyan-glow: 0 0 16px rgba(217, 110, 84, 0.2);
+      
+      --blue-primary: #B88538;
+      --blue-dim: rgba(184, 133, 56, 0.12);
+      
+      --success-green: #3D7A39;
+      --success-dim: rgba(61, 122, 57, 0.12);
+      --warning-amber: #B88538;
+      --warning-dim: rgba(184, 133, 56, 0.12);
+      --danger-red: #C54449;
+      --danger-dim: rgba(197, 68, 73, 0.12);
+      --purple-accent: #8E4A8C;
+      --purple-dim: rgba(142, 74, 140, 0.12);
+    }
+    
+    html.light .aurora { opacity: 0.10; }
+    html.light .panel { box-shadow: 0 4px 20px -4px rgba(0, 0, 0, 0.05); }
+    html.light .nav-group-title { color: #8F828B; }
+    html.light .sidebar { background: #FFFFFF; border-right-color: #E2DBD0; }
+    html.light .topbar { background: rgba(255, 255, 255, 0.88); border-bottom-color: #E2DBD0; }
+    html.light .btn-outline, html.light .btn-ghost { color: #1B1219; border-color: #D6CEC3; }
+    html.light .btn-outline:hover, html.light .btn-ghost:hover { background: #F3EFE8; color: #1B1219; }
+    html.light .nav-item { color: #5F535B; }
+    html.light .nav-item:hover { background: #F6F4EE; color: #1B1219; }
+    html.light .nav-item.active { background: #F3EFE8; color: #D96E54; font-weight: 600; }
+    html.light .status-badge-completed { background: rgba(61, 122, 57, 0.12); color: #3D7A39; border-color: rgba(61, 122, 57, 0.25); }
+    html.light .prio-high { background: rgba(197, 68, 73, 0.12); color: #C54449; border-color: rgba(197, 68, 73, 0.25); }
+    html.light .prio-medium { background: rgba(184, 133, 56, 0.12); color: #B88538; border-color: rgba(184, 133, 56, 0.25); }
+    html.light .prio-low { background: rgba(217, 110, 84, 0.12); color: #D96E54; border-color: rgba(217, 110, 84, 0.25); }
+
+    /* 🥈 2026 Luxury Option: Warm Charcoal + Copper */
+    html.theme-copper, html[data-theme="copper"] {
+      --bg-main: #0D0D0C;
+      --bg-sidebar: #121211;
+      --bg-card: #151514;
+      --bg-card-hover: #211F1B;
+      --bg-input: #191816;
+      --bg-surface-3: #2A2621;
+      --bg-elevated: #211F1B;
+      
+      --border-color: #2E2B26;
+      --border-bright: #443F38;
+      
+      --text-main: #F5EFE7;
+      --text-secondary: #A79E94;
+      --text-muted: #A79E94;
+      --text-dim: #756D64;
+      
+      --cyan-primary: #D58A5B;
+      --cyan-hover: #E3A77B;
+      --cyan-dim: rgba(213, 138, 91, 0.14);
+      --cyan-soft: rgba(213, 138, 91, 0.14);
+      --cyan-glow: 0 0 20px rgba(213, 138, 91, 0.28);
+      --cyan-gradient: linear-gradient(135deg, #D58A5B 0%, #E3A77B 100%);
+      
+      --success-green: #52B788;
+      --success-dim: rgba(82, 183, 136, 0.14);
+      --warning-amber: #E09F3E;
+      --warning-dim: rgba(224, 159, 62, 0.14);
+      --danger-red: #D96B6B;
+      --danger-dim: rgba(217, 107, 107, 0.14);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html {
+      scroll-behavior: smooth;
+    }
+
+    /* ══════════════════════════════════════════════════════════════════════
+       ✨ ANIMATED GLOWING SCROLLBARS (Adaptive Dark & Light)
+       ══════════════════════════════════════════════════════════════════════ */
+    * {
+      scrollbar-width: thin;
+      scrollbar-color: var(--cyan-primary, #F0917A) transparent;
+    }
+
+    ::-webkit-scrollbar {
+      width: 7px;
+      height: 7px;
+      background: transparent;
+      transition: width 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    ::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.04);
+      border-radius: 999px;
+      margin: 4px;
+    }
+
+    html.light ::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.03);
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: linear-gradient(180deg, var(--cyan-primary, #F0917A), var(--amber, #F0917A) 60%, var(--gold, #E0AD62));
+      border-radius: 999px;
+      border: 2px solid transparent;
+      background-clip: padding-box;
+      box-shadow: 0 0 10px var(--cyan-dim, rgba(240, 145, 122, 0.25));
+      transition: all 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: linear-gradient(180deg, var(--cyan-hover, #F3A691), #E0AD62);
+      border: 1px solid transparent;
+      background-clip: padding-box;
+      box-shadow: 0 0 16px var(--cyan-glow, rgba(240, 145, 122, 0.6)), 0 0 4px var(--cyan-primary, #F0917A);
+    }
+
+    ::-webkit-scrollbar-thumb:active {
+      background: var(--amber, #F0917A);
+      box-shadow: 0 0 20px var(--cyan-primary, #F0917A);
+    }
+
+    ::-webkit-scrollbar-corner {
+      background: transparent;
+    }
+
+    .app-sidebar:hover::-webkit-scrollbar,
+    #aiAssistantMessages:hover::-webkit-scrollbar,
+    .transcript-box:hover::-webkit-scrollbar,
+    body:hover::-webkit-scrollbar {
+      width: 9px;
+    }
+
+    body {
+      background: var(--bg-main);
+      color: var(--text-main);
+      font-family: var(--font-sans);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+      min-height: 100vh;
+    }
+    a { color: inherit; text-decoration: none; }
+    img, svg { display: block; }
+    ::selection { background: var(--cyan-dim); color: var(--text-main); }
+    :focus-visible { outline: 2px solid var(--cyan-primary); outline-offset: 2px; }
+
+    /* Layout Shell */
+    .app-shell { display: flex; min-height: 100vh; }
+
+    /* ── SIDEBAR ──────────────────────────────────────────────────────── */
+    .app-sidebar {
+      width: var(--sidebar-w);
+      background: var(--bg-sidebar);
+      border-right: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      z-index: 40;
+      flex-shrink: 0;
+      overflow-y: auto;
+      padding: 20px 14px;
+    }
+    @media (max-width: 900px) {
+      .app-sidebar { display: none; }
+    }
+
+    .brand-logo-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 4px 8px 20px;
+      border-bottom: 1px solid var(--border-color);
+      margin-bottom: 16px;
+    }
+    .brand-logo-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: var(--cyan-gradient);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #FFFFFF;
+      box-shadow: var(--cyan-glow);
+    }
+    .brand-logo-text {
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--text-main);
+    }
+
+    .nav-group-title {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-dim);
+      padding: 12px 10px 6px;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 10px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-muted);
+      transition: all 0.15s ease;
+      margin-bottom: 2px;
+    }
+    .nav-item:hover {
+      background: var(--bg-card);
+      color: var(--text-main);
+    }
+    .nav-item.active {
+      background: var(--bg-card);
+      color: #FFFFFF;
+      font-weight: 600;
+      position: relative;
+    }
+    .nav-item.active::before {
+      content: '';
+      position: absolute;
+      left: -6px;
+      top: 6px;
+      bottom: 6px;
+      width: 3px;
+      border-radius: 4px;
+      background: var(--cyan-primary);
+      box-shadow: 0 0 8px var(--cyan-primary);
+    }
+    .nav-item svg { width: 16px; height: 16px; flex-shrink: 0; color: inherit; }
+
+    .sidebar-user-card {
+      margin-top: auto;
+      padding-top: 14px;
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 8px 4px;
+      cursor: pointer;
+    }
+    .sidebar-user-avatar {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: var(--cyan-gradient);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 700;
+      color: #FFFFFF;
+      flex-shrink: 0;
+    }
+    .pro-badge {
+      font-family: var(--font-mono);
+      font-size: 9.5px;
+      font-weight: 600;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: var(--cyan-dim);
+      color: var(--cyan-primary);
+      border: 1px solid rgba(6, 182, 212, 0.3);
+    }
+
+    /* ── MAIN CONTENT ─────────────────────────────────────────────────── */
+    .app-main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      padding: 24px 32px 60px;
+    }
+    @media (max-width: 768px) {
+      .app-main { padding: 16px 16px 80px; }
+    }
+
+    /* Topbar Header */
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 28px;
+      flex-wrap: wrap;
+    }
+    .topbar-search-box {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 8px 14px;
+      font-size: 13px;
+      color: var(--text-muted);
+      min-width: 280px;
+      cursor: pointer;
+      transition: border-color 0.15s ease;
+    }
+    .topbar-search-box:hover { border-color: var(--border-bright); color: var(--text-main); }
+    .kbd-tag {
+      margin-left: auto;
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      background: var(--bg-surface-3);
+      color: var(--text-dim);
+      padding: 2px 6px;
+      border-radius: 4px;
+      border: 1px solid var(--border-color);
+    }
+
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .icon-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 9px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-muted);
+      cursor: pointer;
+      position: relative;
+      transition: all 0.15s ease;
+    }
+    .icon-btn:hover { color: var(--text-main); border-color: var(--border-bright); background: var(--bg-card-hover); }
+    .icon-btn .dot-badge {
+      position: absolute;
+      top: 7px;
+      right: 7px;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--cyan-primary);
+      box-shadow: 0 0 6px var(--cyan-primary);
+    }
+
+    /* ── BUTTON SYSTEM (Velvet & Amber Theme) ─────────────────────────── */
+    .btn {
+      font-family: var(--font-sans);
+      font-size: 13.5px;
+      font-weight: 600;
+      border-radius: 999px;
+      border: 1px solid transparent;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 9px 18px;
+      cursor: pointer;
+      white-space: nowrap;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.18s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .btn:active {
+      transform: scale(0.97) !important;
+    }
+
+    /* Primary Button (.btn-amber / .btn-primary) */
+    .btn-amber, .btn-primary {
+      background: var(--amber, #F0917A);
+      color: #2E140C;
+      border-color: transparent;
+      box-shadow: 0 2px 10px rgba(240, 145, 122, 0.28);
+    }
+    .btn-amber:hover, .btn-primary:hover {
+      background: #F3A691;
+      color: #2E140C;
+      transform: translateY(-2px);
+      box-shadow: 0 5px 22px rgba(240, 145, 122, 0.45);
+    }
+
+    /* Shine Sweep Animation (Only on Primary Buttons) */
+    .btn-amber::after, .btn-primary::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 60%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.35), transparent);
+      transform: skewX(-20deg);
+      pointer-events: none;
+      transition: none;
+    }
+    .btn-amber:hover::after, .btn-primary:hover::after {
+      left: 140%;
+      transition: left 0.55s ease;
+    }
+
+    /* Secondary / Outline Button (.btn-outline / .btn-ghost) */
+    .btn-outline, .btn-ghost {
+      background: transparent;
+      color: var(--paper, #F8F1E7);
+      border: 1px solid var(--line, #40303A);
+    }
+    .btn-outline:hover, .btn-ghost:hover {
+      background: rgba(255, 255, 255, 0.04);
+      border-color: var(--paper-dim, #C9B7BA);
+      color: var(--paper, #F8F1E7);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+    }
+
+    .btn-sm { padding: 6px 14px; font-size: 12.5px; }
+
+    /* Reduced Motion Support */
+    @media (prefers-reduced-motion: reduce) {
+      .btn, .btn-amber, .btn-primary, .btn-outline, .btn-ghost {
+        transform: none !important;
+        transition: color 0.18s, background-color 0.18s, border-color 0.18s !important;
+        box-shadow: none !important;
+      }
+      .btn-amber::after, .btn-primary::after {
+        display: none !important;
+      }
+    }
+
+    /* ── CARD & PANEL ─────────────────────────────────────────────────── */
+    .panel {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 10px 30px -15px rgba(0,0,0,0.5);
+    }
+    .panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border-color);
+    }
+    .panel-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-main);
+    }
+
+    /* Status Tags */
+    .status-badge {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
+      padding: 3px 8px;
+      border-radius: 6px;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .status-badge-completed {
+      background: var(--success-dim);
+      color: var(--success-green);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+    .status-badge-processing {
+      background: var(--cyan-dim);
+      color: var(--cyan-primary);
+      border: 1px solid rgba(6, 182, 212, 0.3);
+    }
+    .status-badge-pending {
+      background: var(--warning-dim);
+      color: var(--warning-amber);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+    .status-badge-failed {
+      background: var(--danger-dim);
+      color: var(--danger-red);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    /* Priority Badges */
+    .prio-high { background: rgba(239, 68, 68, 0.15); color: #EF4444; border: 1px solid rgba(239, 68, 68, 0.3); }
+    .prio-medium { background: rgba(245, 158, 11, 0.15); color: #F59E0B; border: 1px solid rgba(245, 158, 11, 0.3); }
+    .prio-low { background: rgba(6, 182, 212, 0.15); color: #06B6D4; border: 1px solid rgba(6, 182, 212, 0.3); }
+
+    /* Mobile Bottom Navigation */
+    .mobile-bottom-nav {
+      display: none;
+      position: fixed; bottom: 0; left: 0; right: 0; z-index: 150;
+      background: var(--bg-sidebar); border-top: 1px solid var(--border-color);
+      padding: 8px 12px calc(8px + env(safe-area-inset-bottom));
+      justify-content: space-around; align-items: center;
+      backdrop-filter: blur(16px);
+    }
+    @media (max-width: 900px) {
+      .mobile-bottom-nav { display: flex; }
+      #mobileMenuTrigger { display: flex !important; }
+    }
+    .mbn-item {
+      display: flex; flex-direction: column; align-items: center; gap: 3px;
+      font-size: 10px; font-weight: 500; color: var(--text-muted);
+    }
+    .mbn-item.active { color: var(--cyan-primary); font-weight: 600; }
+
+    /* Profile Dropdown Menu */
+    .profile-dropdown {
+      position: absolute; right: 0; top: calc(100% + 8px); width: 220px;
+      background: var(--bg-card); border: 1px solid var(--border-bright);
+      border-radius: 12px; padding: 6px; box-shadow: 0 16px 36px rgba(0,0,0,0.6);
+      display: none; flex-direction: column; gap: 2px; z-index: 100;
+    }
+    .profile-dropdown.show { display: flex; }
+    .menu-item {
+      display: flex; align-items: center; gap: 8px; padding: 8px 10px;
+      border-radius: 6px; font-size: 13px; color: var(--text-main);
+    }
+    .menu-item:hover { background: var(--bg-surface-3); color: var(--cyan-primary); }
+
+    /* Modal dialog */
+    .modal-overlay {
+      position: fixed; inset: 0; z-index: 200; background: rgba(5, 7, 10, 0.85); backdrop-filter: blur(10px);
+      display: none; align-items: center; justify-content: center; padding: 20px;
+    }
+    .modal-overlay.show { display: flex; }
+    .modal-box {
+      width: 100%; max-width: 440px; background: var(--bg-card); border: 1px solid var(--border-bright);
+      border-radius: 16px; padding: 28px; text-align: center;
+    }
+
+    /* Toast Keyframes */
+    @keyframes toastSlideIn {
+      from { opacity: 0; transform: translateY(-16px) scale(0.95); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    @keyframes toastSlideOut {
+      from { opacity: 1; transform: translateY(0) scale(1); }
+      to { opacity: 0; transform: translateY(-12px) scale(0.95); }
+    }
+    /* Ambient Drifting Aurora Background */
+    .aurora { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; }
+    .aurora span { position: absolute; border-radius: 50%; filter: blur(100px); opacity: 0.28; }
+    .aurora span:nth-child(1) { width: 560px; height: 560px; top: -240px; left: -120px; background: radial-gradient(circle, rgba(240, 145, 122, 0.5), transparent 70%); animation: drift1 30s ease-in-out infinite; }
+    .aurora span:nth-child(2) { width: 480px; height: 480px; bottom: -220px; right: -100px; background: radial-gradient(circle, rgba(157, 193, 152, 0.4), transparent 70%); animation: drift2 34s ease-in-out infinite; }
+    @keyframes drift1 { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(50px, 40px); } }
+    @keyframes drift2 { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(-40px, -30px); } }
+  </style>
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+
+<div class="aurora"><span></span><span></span></div>
+
+<div class="app-shell">
+  <!-- ── SIDEBAR ─────────────────────────────────────────────────────── -->
+  <aside class="app-sidebar">
+    <!-- Brand Logo -->
+    <a href="{{ url_for('dashboard') }}" class="brand-logo-wrap">
+      <div class="brand-logo-icon">
+        <svg style="width: 18px; height: 18px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+          <path d="M12 2v20M17 5v14M7 9v6M22 10v4M2 11v2"/>
+        </svg>
+      </div>
+      <div class="brand-logo-text">TalkToText Pro</div>
+    </a>
+
+    <!-- WORKSPACE GROUP -->
+    <div class="nav-group-title">Workspace</div>
+    <a href="{{ url_for('dashboard') }}" class="nav-item {% if request.endpoint == 'dashboard' %}active{% endif %}">
+      <i data-lucide="layout-dashboard"></i>
+      <span>Dashboard</span>
+    </a>
+    <a href="{{ url_for('upload_page') }}" class="nav-item {% if request.endpoint == 'upload_page' %}active{% endif %}">
+      <i data-lucide="plus-circle"></i>
+      <span>New Meeting</span>
+    </a>
+    <a href="{{ url_for('history') }}" class="nav-item {% if request.endpoint == 'history' %}active{% endif %}">
+      <i data-lucide="calendar"></i>
+      <span>Meetings</span>
+    </a>
+    <a href="{{ url_for('history') }}" class="nav-item">
+      <i data-lucide="file-text"></i>
+      <span>Notes</span>
+    </a>
+    <a href="{{ url_for('history') }}" class="nav-item">
+      <i data-lucide="mic"></i>
+      <span>Transcripts</span>
+    </a>
+
+    <!-- INSIGHTS GROUP -->
+    <div class="nav-group-title">Insights</div>
+    <a href="{{ url_for('analytics') }}" class="nav-item {% if request.endpoint == 'analytics' %}active{% endif %}">
+      <i data-lucide="bar-chart-3"></i>
+      <span>Analytics</span>
+    </a>
+    <a href="{{ url_for('all_action_items') }}" class="nav-item {% if request.endpoint == 'all_action_items' %}active{% endif %}">
+      <i data-lucide="check-square"></i>
+      <span>Action Items</span>
+    </a>
+    <a href="{{ url_for('decisions_view') }}" class="nav-item {% if request.endpoint == 'decisions_view' %}active{% endif %}">
+      <i data-lucide="check-circle-2"></i>
+      <span>Decisions</span>
+    </a>
+
+    <!-- LIBRARY GROUP -->
+    <div class="nav-group-title">Library</div>
+    <a href="{{ url_for('history', filter='recent') }}" class="nav-item {% if request.args.get('filter') in ['today', 'recent'] %}active{% endif %}">
+      <i data-lucide="clock"></i>
+      <span>Recent</span>
+    </a>
+    <a href="{{ url_for('history', filter='favorites') }}" class="nav-item {% if request.args.get('filter') == 'favorites' %}active{% endif %}">
+      <i data-lucide="star"></i>
+      <span>Favorites</span>
+    </a>
+    <a href="{{ url_for('history', filter='shared') }}" class="nav-item {% if request.args.get('filter') == 'shared' %}active{% endif %}">
+      <i data-lucide="share-2"></i>
+      <span>Shared</span>
+    </a>
+
+    <!-- SYSTEM GROUP -->
+    <div class="nav-group-title">System</div>
+    <a href="{{ url_for('settings_page') }}" class="nav-item {% if request.endpoint == 'settings_page' %}active{% endif %}">
+      <i data-lucide="settings"></i>
+      <span>Settings</span>
+    </a>
+    <a href="{{ url_for('help_page') }}" class="nav-item {% if request.endpoint == 'help_page' %}active{% endif %}">
+      <i data-lucide="help-circle"></i>
+      <span>Help & Support</span>
+    </a>
+
+    <!-- User Profile Chip -->
+    <div class="sidebar-user-card" onclick="toggleProfileDropdown()">
+      <div class="sidebar-user-avatar" style="overflow: hidden; padding: 0;">
+        {% if current_user and current_user.avatar_url %}
+          <img src="{{ current_user.avatar_url }}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+        {% else %}
+          {{ (session.get('user_name', 'N') or 'N')[:1]|upper }}
+        {% endif %}
+      </div>
+      <div style="flex: 1; min-width: 0;">
+        <div style="font-size: 13px; font-weight: 600; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ session.get('user_name', 'Nasrullah') }}</div>
+        <div style="font-size: 11px; color: var(--text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ session.get('user_email', 'nasrullah@example.com') }}</div>
+      </div>
+      <span class="pro-badge">Pro Plan</span>
+    </div>
+  </aside>
+
+  <!-- ── MAIN CONTENT OUTLET ─────────────────────────────────────────── -->
+  <main class="app-main">
+    
+    <!-- Top Header Bar -->
+    <div class="topbar">
+      <!-- Search Input -->
+      <div class="topbar-search-box" onclick="location.href='{{ url_for('history') }}'">
+        <i data-lucide="search" style="width: 15px; height: 15px;"></i>
+        <span>Search meetings, notes, transcripts...</span>
+        <span class="kbd-tag">⌘K</span>
+      </div>
+
+      <!-- Topbar Actions -->
+      <div class="topbar-right">
+        <!-- Notifications Bell -->
+        <a href="{{ url_for('notifications_page') }}" class="icon-btn" title="Notifications">
+          <i data-lucide="bell" style="width: 16px; height: 16px;"></i>
+          <span class="dot-badge"></span>
+        </a>
+
+        <!-- Help / Support -->
+        <a href="{{ url_for('help_page') }}" class="icon-btn" title="Help">
+          <i data-lucide="help-circle" style="width: 16px; height: 16px;"></i>
+        </a>
+
+        <!-- Theme Toggle -->
+        <button type="button" class="icon-btn" onclick="toggleTheme()" title="Toggle Theme">
+          <i id="themeToggleIcon" data-lucide="sun" style="width: 16px; height: 16px;"></i>
+        </button>
+
+        <!-- User Profile Avatar & Dropdown -->
+        <div style="position: relative;">
+          <div class="sidebar-user-avatar" style="cursor: pointer; overflow: hidden; padding: 0;" onclick="toggleProfileDropdown()">
+            {% if current_user and current_user.avatar_url %}
+              <img src="{{ current_user.avatar_url }}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+            {% else %}
+              {{ (session.get('user_name', 'N') or 'N')[:1]|upper }}
+            {% endif %}
+          </div>
+
+          <div id="topProfileDropdown" class="profile-dropdown">
+            <div style="padding: 6px 10px; font-size: 12px; color: var(--text-dim); border-bottom: 1px solid var(--border-color); margin-bottom: 4px;">
+              {{ session.get('user_email', 'nasrullah@example.com') }}
+            </div>
+            <a href="{{ url_for('settings_page') }}" class="menu-item">
+              <i data-lucide="user" style="width: 14px; height: 14px;"></i>
+              <span>Profile Settings</span>
+            </a>
+            <a href="{{ url_for('help_page') }}" class="menu-item">
+              <i data-lucide="book-open" style="width: 14px; height: 14px;"></i>
+              <span>Documentation</span>
+            </a>
+            <div style="height: 1px; background: var(--border-color); margin: 4px 0;"></div>
+            <button type="button" onclick="openSignOutModal()" class="menu-item" style="width: 100%; border: none; background: none; color: var(--danger-red); text-align: left; cursor: pointer;">
+              <i data-lucide="log-out" style="width: 14px; height: 14px; color: var(--danger-red);"></i>
+              <span>Sign out</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div style="margin-bottom: 20px; display: flex; flex-direction: column; gap: 8px;">
+          {% for category, message in messages %}
+            <div style="padding: 10px 16px; border-radius: 10px; font-size: 13px; display: flex; align-items: center; gap: 10px; background: var(--bg-card); border: 1px solid {% if category == 'error' %}var(--danger-red){% else %}var(--cyan-primary){% endif %}; color: var(--text-main);">
+              <i data-lucide="info" style="width: 15px; height: 15px; color: {% if category == 'error' %}var(--danger-red){% else %}var(--cyan-primary){% endif %};"></i>
+              <span>{{ message }}</span>
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <!-- Page Body -->
+    {% block content %}{% endblock %}
+
+  </main>
+</div>
+
+<!-- ── MOBILE BOTTOM NAVIGATION BAR ─────────────────────────────────── -->
+<nav class="mobile-bottom-nav">
+  <a href="{{ url_for('dashboard') }}" class="mbn-item {% if request.endpoint == 'dashboard' %}active{% endif %}">
+    <i data-lucide="layout-dashboard" style="width: 18px; height: 18px;"></i>
+    <span>Dashboard</span>
+  </a>
+  <a href="{{ url_for('upload_page') }}" class="mbn-item {% if request.endpoint == 'upload_page' %}active{% endif %}">
+    <i data-lucide="plus-circle" style="width: 18px; height: 18px;"></i>
+    <span>Upload</span>
+  </a>
+  <a href="{{ url_for('all_action_items') }}" class="mbn-item {% if request.endpoint == 'all_action_items' %}active{% endif %}">
+    <i data-lucide="check-square" style="width: 18px; height: 18px;"></i>
+    <span>Tasks</span>
+  </a>
+  <a href="{{ url_for('history') }}" class="mbn-item {% if request.endpoint == 'history' %}active{% endif %}">
+    <i data-lucide="clock" style="width: 18px; height: 18px;"></i>
+    <span>Meetings</span>
+  </a>
+  <a href="{{ url_for('settings_page') }}" class="mbn-item {% if request.endpoint == 'settings_page' %}active{% endif %}">
+    <i data-lucide="user" style="width: 18px; height: 18px;"></i>
+    <span>Profile</span>
+  </a>
+</nav>
+
+<!-- ── SIGN OUT CONFIRMATION MODAL ──────────────────────────────────── -->
+<div id="signOutModal" class="modal-overlay">
+  <div class="modal-box">
+    <div style="width: 48px; height: 48px; border-radius: 12px; background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.3); display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; color: var(--danger-red);">
+      <i data-lucide="shield-alert" style="width: 24px; height: 24px;"></i>
+    </div>
+    <h3 style="font-size: 18px; font-weight: 700; color: var(--text-main); margin-bottom: 8px;">Sign out</h3>
+    <p style="font-size: 13.5px; color: var(--text-muted); margin-bottom: 24px;">Are you sure you want to sign out of your account?</p>
+    <div style="display: flex; justify-content: center; gap: 12px;">
+      <button type="button" onclick="closeSignOutModal()" class="btn btn-ghost" style="padding: 9px 20px;">Cancel</button>
+      <a href="{{ url_for('logout') }}" class="btn" style="background: var(--danger-red); color: #FFFFFF; padding: 9px 22px;">Sign out</a>
+    </div>
+  </div>
+</div>
+
+<!-- ── IN-APP TOAST NOTIFICATION CONTAINER ────────────────────────── -->
+<div id="toastContainer" style="position: fixed; top: 24px; right: 24px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; pointer-events: none;"></div>
+
+<!-- ── CUSTOM MODAL NOTIFICATION ────────────────────────────────────── -->
+<div id="customConfirmModal" class="modal-overlay">
+  <div class="modal-box">
+    <div id="confirmModalIcon" style="width: 48px; height: 48px; border-radius: 12px; background: rgba(6, 182, 212, 0.14); border: 1px solid rgba(6, 182, 212, 0.3); display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; color: var(--cyan-primary);">
+      <i data-lucide="help-circle" style="width: 24px; height: 24px;"></i>
+    </div>
+    <h3 id="confirmModalTitle" style="font-size: 18px; font-weight: 700; color: var(--text-main); margin-bottom: 8px;">Are you sure?</h3>
+    <p id="confirmModalMsg" style="font-size: 13.5px; color: var(--text-muted); margin-bottom: 24px; line-height: 1.5;">Please confirm your action.</p>
+    <div style="display: flex; justify-content: center; gap: 12px;">
+      <button type="button" onclick="closeConfirmModal()" class="btn btn-ghost" style="padding: 9px 20px;">Cancel</button>
+      <button type="button" id="confirmModalActionBtn" class="btn btn-primary" style="padding: 9px 22px;">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  if (window.lucide) lucide.createIcons();
+
+  // Modern In-App Toast Notification
+  function showToast(message, type = 'success', title = '') {
+    const container = document.getElementById('toastContainer');
+    if (!container) return;
+
+    const toast = document.createElement('div');
+    toast.className = 'modern-toast';
+    toast.style.cssText = `
+      pointer-events: auto;
+      min-width: 300px;
+      max-width: 400px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-bright);
+      border-radius: 14px;
+      padding: 14px 16px;
+      box-shadow: 0 20px 48px rgba(0,0,0,0.8), 0 0 20px rgba(6, 182, 212, 0.15);
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      animation: toastSlideIn 0.3s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+      position: relative;
+      overflow: hidden;
+    `;
+
+    let iconHtml = '';
+    let accentColor = '#06B6D4';
+    if (type === 'success') {
+      accentColor = '#10B981';
+      iconHtml = `<div style="width: 28px; height: 28px; border-radius: 50%; background: rgba(16, 185, 129, 0.15); color: #10B981; display: flex; align-items: center; justify-content: center; flex-shrink: 0;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></div>`;
+    } else if (type === 'error') {
+      accentColor = '#EF4444';
+      iconHtml = `<div style="width: 28px; height: 28px; border-radius: 50%; background: rgba(239, 68, 68, 0.15); color: #EF4444; display: flex; align-items: center; justify-content: center; flex-shrink: 0;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></div>`;
+    } else {
+      accentColor = '#06B6D4';
+      iconHtml = `<div style="width: 28px; height: 28px; border-radius: 50%; background: rgba(6, 182, 212, 0.15); color: #06B6D4; display: flex; align-items: center; justify-content: center; flex-shrink: 0;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></div>`;
+    }
+
+    const defaultTitle = title || (type === 'success' ? 'Success' : type === 'error' ? 'Error' : 'Notice');
+
+    toast.innerHTML = `
+      ${iconHtml}
+      <div style="flex: 1; min-width: 0;">
+        <div style="font-size: 13.5px; font-weight: 700; color: var(--text-main); margin-bottom: 2px;">${defaultTitle}</div>
+        <div style="font-size: 12.5px; color: var(--text-muted); line-height: 1.4;">${message}</div>
+      </div>
+      <button type="button" style="background: none; border: none; color: var(--text-dim); cursor: pointer; padding: 2px;" onclick="this.closest('.modern-toast').remove()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+      <div style="position: absolute; bottom: 0; left: 0; height: 2.5px; width: 100%; background: ${accentColor}; animation: toastProgress 4s linear forwards;"></div>
+    `;
+
+    container.appendChild(toast);
+
+    setTimeout(() => {
+      toast.style.animation = 'toastSlideOut 0.3s cubic-bezier(0.22, 1, 0.36, 1) forwards';
+      setTimeout(() => toast.remove(), 300);
+    }, 4000);
+  }
+
+  // Custom in-app confirmation modal
+  let confirmCallback = null;
+  function customConfirm(options) {
+    const modal = document.getElementById('customConfirmModal');
+    if (!modal) return;
+    document.getElementById('confirmModalTitle').textContent = options.title || 'Are you sure?';
+    document.getElementById('confirmModalMsg').textContent = options.message || '';
+    const actBtn = document.getElementById('confirmModalActionBtn');
+    actBtn.textContent = options.confirmText || 'Confirm';
+    if (options.isDanger) {
+      actBtn.style.background = 'var(--danger-red)';
+    } else {
+      actBtn.style.background = 'var(--cyan-gradient)';
+    }
+    confirmCallback = options.onConfirm;
+    actBtn.onclick = function() {
+      if (confirmCallback) confirmCallback();
+      closeConfirmModal();
+    };
+    modal.classList.add('show');
+  }
+  function closeConfirmModal() {
+    document.getElementById('customConfirmModal')?.classList.remove('show');
+  }
+
+  function toggleProfileDropdown() {
+    document.getElementById('topProfileDropdown')?.classList.toggle('show');
+  }
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.sidebar-user-avatar') && !e.target.closest('#topProfileDropdown')) {
+      document.getElementById('topProfileDropdown')?.classList.remove('show');
+    }
+  });
+
+  function openSignOutModal() {
+    document.getElementById('signOutModal')?.classList.add('show');
+  }
+  function closeSignOutModal() {
+    document.getElementById('signOutModal')?.classList.remove('show');
+  }
+
+  // Dark / Light Theme Toggle
+  function initTheme() {
+    const saved = localStorage.getItem('ttt_theme') || 'dark';
+    if (saved === 'light') {
+      document.documentElement.classList.remove('dark');
+      document.documentElement.classList.add('light');
+    } else {
+      document.documentElement.classList.add('dark');
+      document.documentElement.classList.remove('light');
+    }
+    updateThemeIcon(saved === 'dark');
+  }
+  function toggleTheme() {
+    const isDark = document.documentElement.classList.contains('dark');
+    const nextTheme = isDark ? 'light' : 'dark';
+    if (isDark) {
+      document.documentElement.classList.remove('dark');
+      document.documentElement.classList.add('light');
+    } else {
+      document.documentElement.classList.add('dark');
+      document.documentElement.classList.remove('light');
+    }
+    localStorage.setItem('ttt_theme', nextTheme);
+    updateThemeIcon(!isDark);
+    fetch('/api/user/theme', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ theme: nextTheme })
+    }).catch(() => {});
+  }
+  function updateThemeIcon(isDark) {
+    const icon = document.getElementById('themeToggleIcon');
+    if (icon) {
+      icon.setAttribute('data-lucide', isDark ? 'sun' : 'moon');
+      if (window.lucide) lucide.createIcons();
+    }
+  }
+
+  // Initialize Icons and Theme on Load
+  document.addEventListener('DOMContentLoaded', () => {
+    initTheme();
+    if (window.lucide) {
+      lucide.createIcons();
+    }
+  });
+
+  // Immediate execution fallback
+  if (typeof lucide !== 'undefined' && lucide.createIcons) {
+    lucide.createIcons();
+  }
+
+  // PWA Service Worker Registration
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/static/sw.js')
+        .then(reg => console.log('[PWA] Service Worker active'))
+        .catch(err => console.log('[PWA] Service Worker registration skipped: ', err));
+    });
+  }
+
+  // Ask AI Global Assistant Drawer Controls
+  function toggleAiAssistant() {
+    const drawer = document.getElementById('aiAssistantDrawer');
+    const overlay = document.getElementById('aiAssistantOverlay');
+    if (!drawer) return;
+    const isOpen = drawer.classList.contains('open');
+    if (isOpen) {
+      drawer.classList.remove('open');
+      overlay.classList.remove('open');
+    } else {
+      drawer.classList.add('open');
+      overlay.classList.add('open');
+      document.getElementById('aiAssistantInput')?.focus();
+    }
+  }
+
+  function askAiSuggested(questionText) {
+    const input = document.getElementById('aiAssistantInput');
+    if (input) {
+      input.value = questionText;
+      sendAiAssistantMessage();
+    }
+  }
+
+  async function sendAiAssistantMessage() {
+    const input = document.getElementById('aiAssistantInput');
+    const msg = input.value.trim();
+    if (!msg) return;
+
+    const chatBody = document.getElementById('aiAssistantMessages');
+    
+    // Append User Message
+    const userBubble = document.createElement('div');
+    userBubble.style.cssText = "align-self: flex-end; background: var(--amber, #F0917A); color: #2E140C; padding: 10px 14px; border-radius: 12px 12px 2px 12px; font-size: 13px; font-weight: 500; max-width: 85%; line-height: 1.5; margin-bottom: 12px;";
+    userBubble.textContent = msg;
+    chatBody.appendChild(userBubble);
+    input.value = '';
+
+    // Append Loading State
+    const aiBubble = document.createElement('div');
+    aiBubble.style.cssText = "align-self: flex-start; background: var(--bg-card, #241820); border: 1px solid var(--border-color, #40303A); color: var(--text-main, #F8F1E7); padding: 12px 16px; border-radius: 12px 12px 12px 2px; font-size: 13px; max-width: 85%; line-height: 1.6; margin-bottom: 12px;";
+    aiBubble.innerHTML = '<span style="display:inline-flex; align-items:center; gap:6px; color:var(--text-muted);"><span class="rec-dot" style="width:6px;height:6px;"></span> Searching your meeting archive...</span>';
+    chatBody.appendChild(aiBubble);
+    chatBody.scrollTop = chatBody.scrollHeight;
+
+    try {
+      const res = await fetch('/api/chat-assistant', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query: msg })
+      });
+      const data = await res.json();
+      if (data.answer) {
+        // Convert simple markdown bullets to HTML
+        let formatted = data.answer
+          .replace(/\n\n/g, '<br><br>')
+          .replace(/\n•/g, '<br>•')
+          .replace(/\n-/g, '<br>-')
+          .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+        aiBubble.innerHTML = formatted;
+      } else {
+        aiBubble.textContent = data.error || "Could not retrieve an answer from your meeting notes.";
+      }
+    } catch (e) {
+      aiBubble.textContent = "Unable to connect to AI Meeting Assistant. Please try again.";
+    }
+    chatBody.scrollTop = chatBody.scrollHeight;
+  }
+</script>
+
+<!-- ─── FLOATING ASK AI ASSISTANT BUTTON & SLIDE-OVER DRAWER ────────────── -->
+<button type="button" id="floatingAiBtn" onclick="toggleAiAssistant()" style="position: fixed; bottom: 24px; right: 24px; z-index: 90; background: linear-gradient(135deg, var(--amber, #F0917A), #E0AD62); color: #2E140C; border: none; border-radius: 999px; padding: 11px 20px; font-family: var(--font-sans); font-size: 13.5px; font-weight: 700; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 8px 26px rgba(240, 145, 122, 0.45); cursor: pointer; transition: all 0.18s cubic-bezier(0.22, 1, 0.36, 1);">
+  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/></svg>
+  <span>Ask AI Archive</span>
+</button>
+
+<div id="aiAssistantOverlay" onclick="toggleAiAssistant()" style="position: fixed; inset: 0; background: rgba(0,0,0,0.55); backdrop-filter: blur(4px); z-index: 98; display: none;"></div>
+
+<div id="aiAssistantDrawer" style="position: fixed; top: 0; right: -460px; width: 440px; max-width: 100vw; height: 100vh; background: var(--bg-main); border-left: 1px solid var(--border-color); box-shadow: -15px 0 45px rgba(0,0,0,0.25); z-index: 99; display: flex; flex-direction: column; transition: right 0.28s cubic-bezier(0.22, 1, 0.36, 1);">
+  <!-- Drawer Header -->
+  <div style="padding: 20px 22px; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; background: var(--bg-card);">
+    <div style="display: flex; align-items: center; gap: 10px;">
+      <div style="width: 32px; height: 32px; border-radius: 8px; background: var(--cyan-gradient); display: flex; align-items: center; justify-content: center; color: #2E140C;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/></svg>
+      </div>
+      <div>
+        <div style="font-family: var(--font-serif); font-size: 19px; font-weight: 600; color: var(--text-main);">Workspace AI Assistant</div>
+        <div style="font-family: var(--font-mono); font-size: 10.5px; color: var(--text-muted);">GROUNDED ACROSS ALL MEETINGS</div>
+      </div>
+    </div>
+    <button type="button" onclick="toggleAiAssistant()" style="background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 6px; font-size: 18px;">✕</button>
+  </div>
+
+  <!-- Suggested Chips -->
+  <div style="padding: 12px 18px; border-bottom: 1px solid var(--border-color); background: var(--bg-surface-3); display: flex; gap: 6px; overflow-x: auto; white-space: nowrap;">
+    <button type="button" onclick="askAiSuggested('What decisions were made this week?')" style="background: var(--bg-card); border: 1px solid var(--border-color); color: var(--text-muted); border-radius: 999px; padding: 4px 10px; font-size: 11px; cursor: pointer; white-space: nowrap;">🏛 Decisions this week</button>
+    <button type="button" onclick="askAiSuggested('List all open action items and assignees')" style="background: var(--bg-card); border: 1px solid var(--border-color); color: var(--text-muted); border-radius: 999px; padding: 4px 10px; font-size: 11px; cursor: pointer; white-space: nowrap;">⚡ Pending Tasks</button>
+    <button type="button" onclick="askAiSuggested('Summarize our latest client or roadmap discussion')" style="background: var(--bg-card); border: 1px solid var(--border-color); color: var(--text-muted); border-radius: 999px; padding: 4px 10px; font-size: 11px; cursor: pointer; white-space: nowrap;">📋 Latest Discussion</button>
+  </div>
+
+  <!-- Messages Body -->
+  <div id="aiAssistantMessages" style="flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column;">
+    <div style="align-self: flex-start; background: var(--bg-card); border: 1px solid var(--border-color); color: var(--text-main); padding: 14px 16px; border-radius: 12px 12px 12px 2px; font-size: 13px; max-width: 90%; line-height: 1.6; margin-bottom: 12px;">
+      Hello! I'm your AI Meeting Assistant. Ask me anything about past discussions, decisions made, deadlines, or assigned tasks across your entire recorded history.
+    </div>
+  </div>
+
+  <!-- Input Area -->
+  <div style="padding: 16px 20px; border-top: 1px solid var(--border-color); background: var(--bg-card);">
+    <form onsubmit="event.preventDefault(); sendAiAssistantMessage();" style="display: flex; gap: 8px;">
+      <input type="text" id="aiAssistantInput" placeholder="Ask across all meetings..." style="flex: 1; background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 999px; padding: 10px 16px; font-size: 13px; color: var(--text-main); outline: none;">
+      <button type="submit" class="btn btn-amber" style="padding: 10px 16px; border-radius: 999px;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
+      </button>
+    </form>
+  </div>
+</div>
+
+<style>
+  #aiAssistantDrawer.open { right: 0 !important; }
+  #aiAssistantOverlay.open { display: block !important; }
+</style>
+
+</body>
+</html>

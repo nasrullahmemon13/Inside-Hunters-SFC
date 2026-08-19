@@ -1,0 +1,15 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//TalkToText Pro//Meeting Deliverables//EN
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+BEGIN:VEVENT
+UID:meeting-31-recap@talktotext.pro
+DTSTAMP:20260817T073121Z
+DTSTART:20260817T073121Z
+DTEND:20260817T073121Z
+SUMMARY:Recap: Harvard
+DESCRIPTION:The meeting focused on discussing various food items and their characteristics, highlighting personal preferences and sensory experiences related to food.
+STATUS:CONFIRMED
+END:VEVENT
+END:VCALENDAR

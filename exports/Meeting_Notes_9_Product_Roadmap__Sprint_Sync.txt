@@ -1,0 +1,30 @@
+============================================================
+TALKTOTEXT PRO — MEETING INTELLIGENCE REPORT
+============================================================
+Title:    Product Roadmap & Sprint Sync
+Date:     2026-08-15 05:13:50
+Language: Urdu / English
+Duration: 20 minutes
+------------------------------------------------------------
+
+--- EXECUTIVE SUMMARY ---
+
+Summary briefing here.
+
+--- KEY DISCUSSION POINTS ---
+
+• Key point 1
+
+--- AGREED DECISIONS ---
+
+✓ Decision 1
+
+--- ACTION ITEMS & DELIVERABLES ---
+
+[Completed] Finalize database (Assignee: Sara, Due: Thursday)
+
+--- SPEAKER TRANSCRIPT ---
+
+Speaker 1 (Nasrullah): We need to complete frontend by Friday.
+
+Speaker 2 (Sara): I will finalize database by Thursday.

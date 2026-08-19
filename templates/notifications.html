@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block title %}Notifications & Activity — TalkToText Pro{% endblock %}
+{% block page_eyebrow %}Activity Stream{% endblock %}
+{% block page_title %}Notifications & Activity{% endblock %}
+
+{% block content %}
+<div style="display: flex; flex-direction: column; gap: 20px; max-width: 800px;">
+
+  <!-- Actions Bar -->
+  <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+    <!-- Filter Tabs -->
+    <div style="display: flex; gap: 6px; background: var(--surface); padding: 4px; border-radius: 10px; border: 1px solid var(--line);">
+      <a href="{{ url_for('notifications_page') }}" style="padding: 5px 12px; border-radius: 6px; font-size: 12px; font-family: var(--mono); {% if not selected_cat %}background: var(--signal); color: #1A1305; font-weight: 600;{% else %}color: var(--paper-dim);{% endif %}">
+        All
+      </a>
+      <a href="{{ url_for('notifications_page', cat='Meetings') }}" style="padding: 5px 12px; border-radius: 6px; font-size: 12px; font-family: var(--mono); {% if selected_cat == 'Meetings' %}background: var(--signal); color: #1A1305; font-weight: 600;{% else %}color: var(--paper-dim);{% endif %}">
+        Meetings
+      </a>
+      <a href="{{ url_for('notifications_page', cat='Tasks') }}" style="padding: 5px 12px; border-radius: 6px; font-size: 12px; font-family: var(--mono); {% if selected_cat == 'Tasks' %}background: var(--signal); color: #1A1305; font-weight: 600;{% else %}color: var(--paper-dim);{% endif %}">
+        Tasks
+      </a>
+      <a href="{{ url_for('notifications_page', cat='System') }}" style="padding: 5px 12px; border-radius: 6px; font-size: 12px; font-family: var(--mono); {% if selected_cat == 'System' %}background: var(--signal); color: #1A1305; font-weight: 600;{% else %}color: var(--paper-dim);{% endif %}">
+        System
+      </a>
+    </div>
+
+    <!-- Mark Read & Clear -->
+    <div style="display: flex; gap: 8px;">
+      <form method="POST" action="{{ url_for('mark_notifications_read') }}">
+        <button type="submit" class="btn btn-ghost btn-sm">
+          <i data-lucide="check-check" style="color: var(--sage);"></i>
+          <span>Mark all read</span>
+        </button>
+      </form>
+      {% if notifications %}
+      <form id="clearNotificationsForm" method="POST" action="{{ url_for('clear_notifications_route') }}">
+        <button type="button" onclick="confirmAction({ title: 'Clear All Notifications?', message: 'All notification history will be removed from your activity feed.', confirmText: 'Clear All', confirmType: 'danger', onConfirm: () => document.getElementById('clearNotificationsForm').submit() })" class="btn btn-danger-ghost btn-sm">
+          <i data-lucide="trash-2"></i>
+          <span>Clear</span>
+        </button>
+      </form>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Notification Feed Cards -->
+  {% if notifications %}
+    <div style="display: flex; flex-direction: column; gap: 10px;">
+      {% for note in notifications %}
+        <div class="panel" style="padding: 16px 20px; display: flex; align-items: flex-start; gap: 14px; {% if not note.is_read %}border-color: rgba(232, 163, 61, 0.4); background: var(--surface-2);{% endif %}">
+          <div style="width: 32px; height: 32px; border-radius: 8px; background: var(--signal-dim); color: var(--signal); display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px;">
+            <i data-lucide="bell" style="width: 16px; height: 16px;"></i>
+          </div>
+          <div style="flex: 1;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
+              <h4 style="font-size: 14px; font-weight: 600; color: var(--paper);">{{ note.title }}</h4>
+              <span style="font-family: var(--mono); font-size: 11px; color: var(--paper-dim);">{{ note.created_at }}</span>
+            </div>
+            <p style="font-size: 13px; color: var(--paper-dim); line-height: 1.5;">{{ note.message }}</p>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="panel" style="padding: 48px; text-align: center; color: var(--paper-dim);">
+      No activity notifications right now.
+    </div>
+  {% endif %}
+
+</div>
+{% endblock %}
