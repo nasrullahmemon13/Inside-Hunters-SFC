@@ -34,11 +34,18 @@ from services.summarizer import generate_meeting_notes, chat_with_meeting, auto_
 from services.export import generate_pdf, generate_docx, generate_txt, generate_ics, generate_bulk_zip
 from services.email_digest import generate_weekly_digest_data, render_weekly_digest_html
 
-app = Flask(__name__)
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+IS_SERVERLESS = bool(os.getenv("VERCEL") or os.getenv("AWS_LAMBDA_FUNCTION_NAME") or os.getenv("NOW_REGION"))
+
+app = Flask(
+    __name__,
+    template_folder=os.path.join(BASE_DIR, "templates"),
+    static_folder=os.path.join(BASE_DIR, "static"),
+    static_url_path="/static"
+)
 app.secret_key = os.getenv("SECRET_KEY", "talktotext_secret_key_super_secure_2026")
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-if os.getenv("VERCEL") == "1":
+if IS_SERVERLESS:
     UPLOAD_FOLDER = "/tmp/uploads"
     EXPORTS_FOLDER = "/tmp/exports"
 else:
