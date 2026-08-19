@@ -1,0 +1,34 @@
+{
+  "meeting_id": 31,
+  "title": "Quarterly Executive Review",
+  "language": "English",
+  "duration_seconds": 1800,
+  "summary": "Strategic alignment on infrastructure scaling, GPU node deployments, and product roadmap milestones.",
+  "decisions": [
+    "Upgrade GPU compute clusters by Q3",
+    "Ship v2.0 release on August 15"
+  ],
+  "action_items": [
+    {
+      "assignee": "Ali",
+      "task": "Benchmark Whisper ASR latency on edge devices",
+      "deadline": "July 25",
+      "priority": "High",
+      "status": "Completed"
+    },
+    {
+      "assignee": "Sarah",
+      "task": "Update executive slide deck with PDF export links",
+      "deadline": "July 28",
+      "priority": "Medium",
+      "status": "Pending"
+    }
+  ],
+  "sentiment": {
+    "voice_mood": "Strategic & Decisive",
+    "speaker_type": "Adult Male (Professional Executive)",
+    "estimated_age_group": "30-40 Years",
+    "aggression_level": "Low",
+    "seriousness": "High"
+  }
+}

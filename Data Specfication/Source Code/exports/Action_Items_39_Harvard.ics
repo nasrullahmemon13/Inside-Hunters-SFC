@@ -1,0 +1,15 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//TalkToText Pro//Meeting Deliverables//EN
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+BEGIN:VEVENT
+UID:meeting-39-recap@talktotext.pro
+DTSTAMP:20260818T062213Z
+DTSTART:20260818T062213Z
+DTEND:20260818T062213Z
+SUMMARY:Recap: Harvard
+DESCRIPTION:The meeting featured a light-hearted discussion centered around food preferences and sensory experiences, with a focus on various dishes and their characteristics.
+STATUS:CONFIRMED
+END:VEVENT
+END:VCALENDAR

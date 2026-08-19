@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Verify Your Email — TalkToText Pro</title>
+
+  <!-- Immediate Theme Bootstrapper -->
+  <script>
+    const savedTheme = localStorage.getItem('ttt_theme') || 'dark';
+    if (savedTheme === 'dark') {
+      document.documentElement.classList.add('dark');
+      document.documentElement.setAttribute('data-theme', 'dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+      document.documentElement.setAttribute('data-theme', 'light');
+    }
+  </script>
+
+  <!-- Google Fonts: Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS v3 via CDN -->
+  <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'Inter', 'system-ui', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50: '#eef2ff',
+              100: '#e0e7ff',
+              400: '#818cf8',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+            },
+            surface: {
+              800: '#1e293b',
+              900: '#0f172a',
+              950: '#090d16',
+            }
+          },
+          boxShadow: {
+            'glow-sm': '0 0 15px -3px rgba(99, 102, 241, 0.25)',
+          }
+        }
+      }
+    }
+  </script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="h-full bg-slate-50 dark:bg-surface-950 text-slate-900 dark:text-slate-100 font-sans flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8 transition-colors duration-200">
+  
+  <div class="sm:mx-auto sm:w-full sm:max-w-md text-center">
+    <!-- Brand Logo -->
+    <a href="{{ url_for('home') }}" class="inline-flex items-center gap-2.5 group mb-6">
+      <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-brand-500 to-indigo-700 flex items-center justify-center text-white font-black text-xl shadow-glow-sm group-hover:scale-105 transition-transform duration-200 ring-1 ring-white/20">
+        T
+      </div>
+      <div class="flex items-center gap-1 text-left">
+        <span class="font-extrabold text-xl tracking-tight text-slate-900 dark:text-white">TalkToText</span>
+        <span class="px-1.5 py-0.5 text-[9px] font-extrabold uppercase tracking-wider bg-brand-500/15 text-brand-600 dark:text-brand-400 border border-brand-500/30 rounded-md">PRO</span>
+      </div>
+    </a>
+  </div>
+
+  <div class="sm:mx-auto sm:w-full sm:max-w-md animate-in fade-in slide-in-from-bottom-4 duration-300">
+    <div class="bg-white dark:bg-surface-900 border border-slate-200 dark:border-slate-800 py-8 px-6 sm:px-10 shadow-xl dark:shadow-2xl rounded-3xl backdrop-blur-xl text-center space-y-5">
+      
+      <div class="w-14 h-14 rounded-2xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mx-auto border border-emerald-500/30">
+        <i data-lucide="mail-check" class="w-7 h-7"></i>
+      </div>
+
+      <div>
+        <h2 class="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">Check your email</h2>
+        <p class="mt-2 text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+          We've sent an account activation link to your email address. Please click the link inside to verify your workspace.
+        </p>
+      </div>
+
+      <div class="pt-2 space-y-3">
+        <button onclick="showToast('Verification email resent successfully!', 'success')" class="w-full inline-flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-semibold text-white bg-brand-600 hover:bg-brand-500 shadow-glow-sm transition-all text-sm">
+          <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+          <span>Resend email</span>
+        </button>
+
+        <div class="text-xs text-slate-500 dark:text-slate-400">
+          Didn't receive it?
+          <a href="{{ url_for('register') }}" class="font-semibold text-brand-600 dark:text-brand-400 hover:underline">
+            Change email address
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification System -->
+  <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>

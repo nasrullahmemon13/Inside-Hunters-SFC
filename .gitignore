@@ -1,0 +1,36 @@
+# Python bytecode & cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyc
+
+# Environment & local secrets
+.env
+.env.local
+.venv/
+env/
+venv/
+ENV/
+
+# Large media files (exceeding GitHub limit)
+*.mp4
+*.mkv
+*.mov
+*.avi
+*.wmv
+*.flv
+*.zip
+*.tar.gz
+Video/
+Data Specfication/Video/
+
+# OS specific files
+.DS_Store
+Thumbs.db
+desktop.ini
+$RECYCLE.BIN/
+
+# Node / Scratch temp
+node_modules/
+scratch/
+scratch_db_views/

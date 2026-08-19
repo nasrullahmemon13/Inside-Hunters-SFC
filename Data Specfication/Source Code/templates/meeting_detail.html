@@ -1,0 +1,1023 @@
+{% extends "base.html" %}
+
+{% block title %}{{ meeting.title }} — TalkToText Pro Workspace{% endblock %}
+
+{% block extra_head %}
+<style>
+  .meeting-workspace-shell {
+    display: flex;
+    gap: 20px;
+    margin-top: 4px;
+  }
+  @media (max-width: 900px) {
+    .meeting-workspace-shell { flex-direction: column; }
+  }
+
+  /* Left Vertical Nav Tabs */
+  .meeting-tab-sidebar {
+    width: 170px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex-shrink: 0;
+  }
+  @media (max-width: 900px) {
+    .meeting-tab-sidebar { width: 100%; flex-direction: row; overflow-x: auto; padding-bottom: 6px; }
+  }
+
+  .m-tab-btn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    border-radius: 9px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-muted);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.15s ease;
+    white-space: nowrap;
+  }
+  .m-tab-btn:hover {
+    background: var(--bg-card);
+    color: var(--text-main);
+  }
+  .m-tab-btn.active {
+    background: var(--bg-card);
+    color: var(--cyan-primary);
+    font-weight: 600;
+  }
+  .m-tab-btn svg { width: 16px; height: 16px; flex-shrink: 0; }
+
+  /* Meeting Content Canvas */
+  .meeting-canvas {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    min-width: 0;
+  }
+
+  /* Two-column top section: Executive Summary + Snapshot */
+  .summary-snapshot-grid {
+    display: grid;
+    grid-template-columns: 1.6fr 1fr;
+    gap: 20px;
+  }
+  @media (max-width: 850px) {
+    .summary-snapshot-grid { grid-template-columns: 1fr; }
+  }
+
+  /* Sticky Audio Player with Voice Enhancer */
+  .sticky-audio-bar {
+    position: sticky;
+    bottom: 20px;
+    z-index: 100;
+    background: var(--bg-card);
+    border: 1px solid var(--border-bright);
+    border-radius: 100px;
+    padding: 10px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    box-shadow: 0 16px 36px rgba(0,0,0,0.18), var(--cyan-glow);
+    margin-top: 24px;
+  }
+
+  .player-play-btn {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: var(--cyan-gradient);
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #FFFFFF;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  .player-scrubber {
+    flex: 1;
+    height: 6px;
+    background: var(--bg-surface-3);
+    border-radius: 100px;
+    overflow: hidden;
+    cursor: pointer;
+  }
+  .player-progress {
+    height: 100%;
+    width: 34%;
+    background: var(--cyan-primary);
+    border-radius: 100px;
+    box-shadow: 0 0 10px var(--cyan-primary);
+  }
+
+  /* Voice Enhancer Toggle Button */
+  .enhancer-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    border-radius: 100px;
+    font-size: 11.5px;
+    font-weight: 600;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-color);
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.18s ease;
+  }
+  .enhancer-btn.active {
+    background: rgba(6, 182, 212, 0.16);
+    border-color: var(--cyan-primary);
+    color: var(--cyan-primary);
+    box-shadow: 0 0 12px rgba(6, 182, 212, 0.3);
+  }
+
+  /* Donut Sentiment Chart */
+  .donut-chart-svg {
+    width: 90px;
+    height: 90px;
+    transform: rotate(-90deg);
+  }
+
+  /* Suggested Question Card */
+  .question-pill-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 16px;
+    border-radius: 12px;
+    background: var(--bg-input);
+    border: 1px solid var(--border-color);
+    cursor: pointer;
+    transition: all 0.18s ease;
+    text-align: left;
+    width: 100%;
+  }
+  .question-pill-card:hover {
+    border-color: var(--cyan-primary);
+    background: var(--bg-card-hover);
+    transform: translateY(-1px);
+  }
+  .question-pill-card span {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-main);
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div>
+
+  <!-- Top Breadcrumb & Actions Bar -->
+  <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid var(--border-color);">
+    <div>
+      <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 4px;">
+        <a href="{{ url_for('history') }}" style="color: var(--text-muted); display: flex; align-items: center; gap: 4px;" title="Back to history">
+          <i data-lucide="arrow-left" style="width: 16px; height: 16px;"></i>
+        </a>
+        <h1 style="font-size: 22px; font-weight: 700; color: var(--text-main);">{{ meeting.title }}</h1>
+      </div>
+      <div style="display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--text-muted); flex-wrap: wrap;">
+        <span>{{ meeting.created_at }}</span>
+        <span>•</span>
+        <span>9:30 AM</span>
+        <span>•</span>
+        <span style="font-family: var(--font-mono);">{{ (meeting.duration_seconds / 60)|round|int }} min</span>
+        <span>•</span>
+        <span>5 Participants</span>
+        <span>•</span>
+        <span>{{ meeting.language }}</span>
+        <span class="status-badge status-badge-completed">Completed</span>
+      </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+      <!-- Re-Summarize with Template Dropdown -->
+      <div style="position: relative; display: inline-block;">
+        <button type="button" onclick="document.getElementById('templateDropdownMenu').classList.toggle('show')" class="btn btn-ghost btn-sm" style="display: inline-flex; align-items: center; gap: 6px;">
+          <i data-lucide="layout-template" style="width: 14px; height: 14px; color: var(--amber, #F0917A);"></i>
+          <span>Template: {{ (meeting.template_type or 'general')|title }} ▾</span>
+        </button>
+        <div id="templateDropdownMenu" class="profile-dropdown" style="width: 210px; z-index: 120;">
+          <div style="font-size: 10.5px; font-family: var(--font-mono); color: var(--text-muted); padding: 6px 10px;">APPLY TEMPLATE</div>
+          <div class="menu-item" onclick="applyTemplate('general')" style="cursor: pointer;">📄 General Meeting</div>
+          <div class="menu-item" onclick="applyTemplate('standup')" style="cursor: pointer;">⚡ Standup / Scrum</div>
+          <div class="menu-item" onclick="applyTemplate('sales_discovery')" style="cursor: pointer;">💼 Sales Discovery</div>
+          <div class="menu-item" onclick="applyTemplate('one_on_one')" style="cursor: pointer;">🤝 1-on-1 Sync</div>
+          <div class="menu-item" onclick="applyTemplate('sprint_retro')" style="cursor: pointer;">🔄 Sprint Retro</div>
+          <div class="menu-item" onclick="applyTemplate('board_meeting')" style="cursor: pointer;">🏛 Board Review</div>
+          <div class="menu-item" onclick="applyTemplate('brainstorming')" style="cursor: pointer;">💡 Brainstorm</div>
+        </div>
+      </div>
+
+      <!-- Voice Enhancer Quick Pill -->
+      <button type="button" id="voiceEnhancerToggleTop" class="enhancer-btn active" onclick="toggleVoiceEnhancer()">
+        <i data-lucide="sparkles" style="width: 13px; height: 13px;"></i>
+        <span>AI Voice Enhancer: ON</span>
+      </button>
+
+      <!-- Share Public Link -->
+      <button type="button" onclick="const sUrl = window.location.origin + '/share/{{ meeting.share_token or meeting.id }}'; navigator.clipboard.writeText(sUrl); showToast('Public share link copied to clipboard!', 'success', 'Link Copied');" class="btn btn-ghost btn-sm" title="Copy public share link">
+        <i data-lucide="share-2" style="width: 14px; height: 14px;"></i>
+        <span>Share</span>
+      </button>
+
+      <!-- Export PDF -->
+      <a href="{{ url_for('export_meeting', meeting_id=meeting.id, format='pdf') }}" class="btn btn-ghost btn-sm" title="Download formatted PDF report">
+        <i data-lucide="file-text" style="width: 14px; height: 14px; color: var(--danger-red);"></i>
+        <span>PDF</span>
+      </a>
+
+      <!-- Export Word -->
+      <a href="{{ url_for('export_meeting', meeting_id=meeting.id, format='docx') }}" class="btn btn-ghost btn-sm" title="Download Microsoft Word .docx document">
+        <i data-lucide="file-code-2" style="width: 14px; height: 14px; color: var(--cyan-primary);"></i>
+        <span>Word</span>
+      </a>
+
+      <!-- Export Plaintext -->
+      <a href="{{ url_for('export_meeting', meeting_id=meeting.id, format='txt') }}" class="btn btn-ghost btn-sm" title="Download Plaintext / Markdown">
+        <i data-lucide="file-lines" style="width: 14px; height: 14px;"></i>
+        <span>TXT</span>
+      </a>
+
+      <!-- Calendar Sync -->
+      <a href="{{ url_for('export_meeting', meeting_id=meeting.id, format='ics') }}" class="btn btn-ghost btn-sm" title="Export iCalendar .ics Event">
+        <i data-lucide="calendar" style="width: 14px; height: 14px;"></i>
+      </a>
+
+      <!-- Trash / Delete -->
+      <form id="delMeetingForm" method="POST" action="{{ url_for('delete_meeting_route', meeting_id=meeting.id) }}" style="display: inline;">
+        <button type="button" onclick="customConfirm({ title: 'Move Meeting to Trash?', message: 'This meeting note will be moved to Trash archives. You can restore it anytime.', confirmText: 'Move to Trash', isDanger: true, onConfirm: () => document.getElementById('delMeetingForm').submit() })" class="btn btn-ghost btn-sm" style="color: var(--danger-red);">
+          <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Main Shell: Left Tabs + Canvas -->
+  <div class="meeting-workspace-shell">
+    
+    <!-- Vertical Tabs (Overview | Smart Q&A | Key Points | Decisions | Action Items | Sentiment & Voice Mood) -->
+    <div class="meeting-tab-sidebar">
+      <button type="button" class="m-tab-btn active" onclick="switchMeetingTab('overview', this)">
+        <i data-lucide="layout"></i>
+        <span>Overview</span>
+      </button>
+      <button type="button" class="m-tab-btn" onclick="switchMeetingTab('questions', this)">
+        <i data-lucide="help-circle"></i>
+        <span>Smart Q&A</span>
+      </button>
+      <button type="button" class="m-tab-btn" onclick="switchMeetingTab('points', this)">
+        <i data-lucide="list-checks"></i>
+        <span>Key Points</span>
+      </button>
+      <button type="button" class="m-tab-btn" onclick="switchMeetingTab('decisions', this)">
+        <i data-lucide="check-circle-2"></i>
+        <span>Decisions</span>
+      </button>
+      <button type="button" class="m-tab-btn" onclick="switchMeetingTab('actions', this)">
+        <i data-lucide="check-square"></i>
+        <span>Action Items</span>
+      </button>
+      <button type="button" class="m-tab-btn" onclick="switchMeetingTab('sentiment', this)">
+        <i data-lucide="pie-chart"></i>
+        <span>Voice Mood</span>
+      </button>
+    </div>
+
+    <!-- Canvas -->
+    <div class="meeting-canvas">
+      
+      <!-- Section 1: Executive Summary & Snapshot -->
+      <div class="summary-snapshot-grid" id="tabPaneOverview">
+        
+        <!-- Left: Executive Summary -->
+        <div class="panel" style="padding: 24px;">
+          <div style="font-size: 15px; font-weight: 700; color: var(--text-main); margin-bottom: 12px;">
+            Executive Summary
+          </div>
+          <p style="font-size: 13.5px; line-height: 1.7; color: var(--text-muted); margin-bottom: 16px;">
+            {{ meeting.summary or "Summary not available for this meeting." }}
+          </p>
+        </div>
+
+        <!-- Right: Snapshot Card (Strictly Live Metadata from Database) -->
+        <div class="panel" style="padding: 24px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+            <div style="font-size: 15px; font-weight: 700; color: var(--text-main); display: flex; align-items: center; gap: 8px;">
+              <i data-lucide="gauge" style="width: 16px; height: 16px; color: var(--cyan-primary);"></i>
+              <span>Meeting Snapshot</span>
+            </div>
+            <span class="status-badge status-badge-completed" style="font-size: 10.5px;">Live DB</span>
+          </div>
+
+          {% set completed_tasks_count = namespace(val=0) %}
+          {% for itm in meeting.action_items %}
+            {% if itm.status == 'Completed' %}{% set completed_tasks_count.val = completed_tasks_count.val + 1 %}{% endif %}
+          {% endfor %}
+
+          <div style="display: flex; flex-direction: column; gap: 9px; font-size: 12.5px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; border-radius: 8px; background: var(--bg-input); border: 1px solid var(--border-color);">
+              <span style="color: var(--text-muted); display: flex; align-items: center; gap: 6px;">
+                <i data-lucide="calendar" style="width: 13px; height: 13px; color: var(--text-dim);"></i>
+                <span>Recorded On</span>
+              </span>
+              <span style="font-weight: 600; color: var(--text-main);">{{ meeting.created_at[:16] if meeting.created_at else 'Recent' }}</span>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; border-radius: 8px; background: var(--bg-input); border: 1px solid var(--border-color);">
+              <span style="color: var(--text-muted); display: flex; align-items: center; gap: 6px;">
+                <i data-lucide="clock" style="width: 13px; height: 13px; color: var(--cyan-primary);"></i>
+                <span>Audio Duration</span>
+              </span>
+              <span style="font-weight: 600; font-family: var(--font-mono); color: var(--cyan-primary);">
+                {{ (meeting.duration_seconds // 60) }}m {{ (meeting.duration_seconds % 60) }}s
+              </span>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; border-radius: 8px; background: var(--bg-input); border: 1px solid var(--border-color);">
+              <span style="color: var(--text-muted); display: flex; align-items: center; gap: 6px;">
+                <i data-lucide="globe" style="width: 13px; height: 13px; color: var(--text-dim);"></i>
+                <span>Language & Style</span>
+              </span>
+              <span style="font-weight: 600; color: var(--text-main);">{{ meeting.language }} • {{ meeting.summary_style or 'Executive' }}</span>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; border-radius: 8px; background: var(--bg-input); border: 1px solid var(--border-color);">
+              <span style="color: var(--text-muted); display: flex; align-items: center; gap: 6px;">
+                <i data-lucide="check-circle" style="width: 13px; height: 13px; color: var(--success-green);"></i>
+                <span>Agreed Decisions</span>
+              </span>
+              <span style="font-weight: 600; color: var(--success-green);">{{ meeting.decisions|length }} Confirmed</span>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; border-radius: 8px; background: var(--bg-input); border: 1px solid var(--border-color);">
+              <span style="color: var(--text-muted); display: flex; align-items: center; gap: 6px;">
+                <i data-lucide="list-todo" style="width: 13px; height: 13px; color: var(--warning-amber);"></i>
+                <span>Action Items</span>
+              </span>
+              <span style="font-weight: 600; color: var(--text-main);">
+                {{ meeting.action_items|length }} Total <span style="color: var(--success-green); font-size: 11px;">({{ completed_tasks_count.val }} Done)</span>
+              </span>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; border-radius: 8px; background: var(--bg-input); border: 1px solid var(--border-color);">
+              <span style="color: var(--text-muted); display: flex; align-items: center; gap: 6px;">
+                <i data-lucide="smile" style="width: 13px; height: 13px; color: var(--cyan-primary);"></i>
+                <span>Voice Mood</span>
+              </span>
+              <span style="font-weight: 600; color: var(--cyan-primary);">
+                {{ (meeting.sentiment.voice_mood if meeting.sentiment and meeting.sentiment.voice_mood else (meeting.sentiment.tone if meeting.sentiment else 'Collaborative')) }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Section 2: Key Points & Deep Voice Mood Sentiment -->
+      <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 20px;" id="tabPanePointsSentiment">
+        
+        <!-- Key Discussion Points -->
+        <div class="panel" style="padding: 24px;">
+          <div style="font-size: 15px; font-weight: 700; color: var(--text-main); margin-bottom: 14px;">
+            Key Discussion Points
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 10px;">
+            {% if meeting.key_points %}
+              {% for pt in meeting.key_points %}
+                <div style="display: flex; align-items: flex-start; gap: 10px; font-size: 13px; color: var(--text-main); line-height: 1.4;">
+                  <span style="color: var(--cyan-primary); font-size: 16px; line-height: 1;">•</span>
+                  <span>{{ pt }}</span>
+                </div>
+              {% endfor %}
+            {% else %}
+              <div style="color: var(--text-muted); font-size: 13px; padding: 12px 0;">No key discussion points recorded for this meeting.</div>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Deep Voice Mood, Speaker Identifier & Acoustic Profile Panel -->
+        <div class="panel" style="padding: 24px; display: flex; flex-direction: column; gap: 16px;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div style="font-size: 15px; font-weight: 700; color: var(--text-main); display: flex; align-items: center; gap: 8px;">
+              <i data-lucide="activity" style="width: 16px; height: 16px; color: var(--cyan-primary);"></i>
+              <span>Voice Mood & Speaker Judge</span>
+            </div>
+            <span class="status-badge prio-low" style="font-size: 11px;">Live Acoustic Profiler</span>
+          </div>
+
+          <!-- 👤 Speaker Identification (Child / Adult Male / Adult Female / Youth) -->
+          <div style="padding: 12px 14px; border-radius: 10px; background: rgba(6, 182, 212, 0.08); border: 1px solid rgba(6, 182, 212, 0.25); display: flex; align-items: center; gap: 12px;">
+            <div style="width: 38px; height: 38px; border-radius: 50%; background: var(--cyan-dim); border: 1px solid var(--cyan-primary); display: flex; align-items: center; justify-content: center; color: var(--cyan-primary); font-size: 18px; flex-shrink: 0;">
+              {% if meeting.sentiment and 'Child' in (meeting.sentiment.speaker_type|string) or 'Bacha' in (meeting.sentiment.speaker_type|string) %}
+                👶
+              {% elif meeting.sentiment and 'Female' in (meeting.sentiment.speaker_type|string) or 'Larki' in (meeting.sentiment.speaker_type|string) or 'Woman' in (meeting.sentiment.speaker_type|string) %}
+                👩
+              {% elif meeting.sentiment and 'Male' in (meeting.sentiment.speaker_type|string) or 'Larka' in (meeting.sentiment.speaker_type|string) or 'Man' in (meeting.sentiment.speaker_type|string) %}
+                👨
+              {% else %}
+                🎙️
+              {% endif %}
+            </div>
+            <div style="flex: 1; min-width: 0;">
+              <div style="font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600;">Detected Speaker Profile</div>
+              <div style="font-size: 13.5px; font-weight: 700; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                {{ (meeting.sentiment.speaker_type if meeting.sentiment and meeting.sentiment.speaker_type else "Adult Male / Female (Professional Adult)") }}
+              </div>
+              <div style="font-size: 11px; color: var(--cyan-primary); font-family: var(--font-mono); margin-top: 1px;">
+                Est. Age: {{ (meeting.sentiment.estimated_age_group if meeting.sentiment and meeting.sentiment.estimated_age_group else "25-35 Years") }} • {{ (meeting.sentiment.vocal_characteristics if meeting.sentiment and meeting.sentiment.vocal_characteristics else "Resonant Vocal Pitch") }}
+              </div>
+            </div>
+          </div>
+
+          <!-- Voice Mood Attributes Grid -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 12px;">
+            <div style="padding: 10px 12px; border-radius: 9px; background: var(--bg-input); border: 1px solid var(--border-color);">
+              <div style="color: var(--text-dim); margin-bottom: 2px; font-size: 11px;">Voice Mood / Emotion</div>
+              <div style="font-weight: 700; color: var(--cyan-primary);">
+                {{ (meeting.sentiment.voice_mood if meeting.sentiment and meeting.sentiment.voice_mood else "Professional & Serious") }}
+              </div>
+            </div>
+
+            <div style="padding: 10px 12px; border-radius: 9px; background: var(--bg-input); border: 1px solid var(--border-color);">
+              <div style="color: var(--text-dim); margin-bottom: 2px; font-size: 11px;">Aggression Rating</div>
+              <div style="font-weight: 700; color: {% if meeting.sentiment and 'High' in (meeting.sentiment.aggression_level|string) %}var(--danger-red){% elif meeting.sentiment and 'Moderate' in (meeting.sentiment.aggression_level|string) %}var(--warning-amber){% else %}var(--success-green){% endif %};">
+                {{ (meeting.sentiment.aggression_level if meeting.sentiment and meeting.sentiment.aggression_level else "Low / Calm (No anger)") }}
+              </div>
+            </div>
+
+            <div style="padding: 10px 12px; border-radius: 9px; background: var(--bg-input); border: 1px solid var(--border-color);">
+              <div style="color: var(--text-dim); margin-bottom: 2px; font-size: 11px;">Seriousness Level</div>
+              <div style="font-weight: 700; color: var(--text-main);">
+                {{ (meeting.sentiment.seriousness if meeting.sentiment and meeting.sentiment.seriousness else "High / Goal-Focused") }}
+              </div>
+            </div>
+
+            <div style="padding: 10px 12px; border-radius: 9px; background: var(--bg-input); border: 1px solid var(--border-color);">
+              <div style="color: var(--text-dim); margin-bottom: 2px; font-size: 11px;">Slangs / Informal Words</div>
+              <div style="font-weight: 600; color: var(--text-muted); font-size: 11.5px;">
+                {% if meeting.sentiment and meeting.sentiment.slangs_detected %}
+                  {% if meeting.sentiment.slangs_detected is string %}
+                    {{ meeting.sentiment.slangs_detected }}
+                  {% else %}
+                    {{ meeting.sentiment.slangs_detected|join(", ") }}
+                  {% endif %}
+                {% else %}
+                  None (Formal speech)
+                {% endif %}
+              </div>
+            </div>
+          </div>
+
+          <!-- Dynamic Sentiment Breakdown -->
+          <div style="display: flex; align-items: center; gap: 16px; padding-top: 10px; border-top: 1px solid var(--border-color);">
+            <svg class="donut-chart-svg" viewBox="0 0 36 36">
+              <circle cx="18" cy="18" r="14" fill="none" stroke="#1F242E" stroke-width="4"/>
+              <circle cx="18" cy="18" r="14" fill="none" stroke="#06B6D4" stroke-width="4" stroke-dasharray="{{ (meeting.sentiment.positive_pct if meeting.sentiment and meeting.sentiment.positive_pct else 72) }} 100" stroke-dashoffset="0"/>
+              <circle cx="18" cy="18" r="14" fill="none" stroke="#64748B" stroke-width="4" stroke-dasharray="{{ (meeting.sentiment.neutral_pct if meeting.sentiment and meeting.sentiment.neutral_pct else 20) }} 100" stroke-dashoffset="-{{ (meeting.sentiment.positive_pct if meeting.sentiment and meeting.sentiment.positive_pct else 72) }}"/>
+              <circle cx="18" cy="18" r="14" fill="none" stroke="#EF4444" stroke-width="4" stroke-dasharray="{{ (meeting.sentiment.negative_pct if meeting.sentiment and meeting.sentiment.negative_pct else 8) }} 100" stroke-dashoffset="-{{ ((meeting.sentiment.positive_pct if meeting.sentiment and meeting.sentiment.positive_pct else 72) + (meeting.sentiment.neutral_pct if meeting.sentiment and meeting.sentiment.neutral_pct else 20)) }}"/>
+            </svg>
+
+            <div style="display: flex; flex-direction: column; gap: 4px; font-size: 11.5px; flex: 1;">
+              <div style="display: flex; justify-content: space-between;">
+                <span style="color: var(--text-muted);">Positive Mood</span>
+                <span style="font-weight: 700; color: #06B6D4;">{{ (meeting.sentiment.positive_pct if meeting.sentiment and meeting.sentiment.positive_pct else 72) }}%</span>
+              </div>
+              <div style="display: flex; justify-content: space-between;">
+                <span style="color: var(--text-muted);">Neutral / Objective</span>
+                <span style="font-weight: 700; color: #64748B;">{{ (meeting.sentiment.neutral_pct if meeting.sentiment and meeting.sentiment.neutral_pct else 20) }}%</span>
+              </div>
+              <div style="display: flex; justify-content: space-between;">
+                <span style="color: var(--text-muted);">Tension / Aggression</span>
+                <span style="font-weight: 700; color: #EF4444;">{{ (meeting.sentiment.negative_pct if meeting.sentiment and meeting.sentiment.negative_pct else 8) }}%</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 🎛️ Live AI Voice Changer Studio Presets -->
+          <div style="padding-top: 12px; border-top: 1px solid var(--border-color);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <div style="font-size: 12px; font-weight: 700; color: var(--text-main); display: flex; align-items: center; gap: 6px;">
+                <i data-lucide="sliders" style="width: 14px; height: 14px; color: var(--cyan-primary);"></i>
+                <span>Live AI Voice Changer Studio</span>
+              </div>
+              <span id="activeVoicePresetBadge" style="font-size: 10.5px; font-family: var(--font-mono); color: var(--cyan-primary); background: var(--cyan-dim); padding: 2px 8px; border-radius: 100px; font-weight: 600;">🎙️ Natural</span>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px;">
+              <button type="button" class="btn btn-ghost btn-sm voice-preset-btn active" onclick="setVoicePreset('natural', this)" style="font-size: 11px; padding: 6px 6px; justify-content: center; border-radius: 8px;">
+                <span>🎙️ Natural</span>
+              </button>
+              <button type="button" class="btn btn-ghost btn-sm voice-preset-btn" onclick="setVoicePreset('deep_male', this)" style="font-size: 11px; padding: 6px 6px; justify-content: center; border-radius: 8px;">
+                <span>👨 Deep Male</span>
+              </button>
+              <button type="button" class="btn btn-ghost btn-sm voice-preset-btn" onclick="setVoicePreset('studio_female', this)" style="font-size: 11px; padding: 6px 6px; justify-content: center; border-radius: 8px;">
+                <span>👩 Female</span>
+              </button>
+              <button type="button" class="btn btn-ghost btn-sm voice-preset-btn" onclick="setVoicePreset('child', this)" style="font-size: 11px; padding: 6px 6px; justify-content: center; border-radius: 8px;">
+                <span>👶 Young Kid</span>
+              </button>
+              <button type="button" class="btn btn-ghost btn-sm voice-preset-btn" onclick="setVoicePreset('robot', this)" style="font-size: 11px; padding: 6px 6px; justify-content: center; border-radius: 8px;">
+                <span>🤖 AI Robot</span>
+              </button>
+              <button type="button" class="btn btn-ghost btn-sm voice-preset-btn" onclick="setVoicePreset('radio', this)" style="font-size: 11px; padding: 6px 6px; justify-content: center; border-radius: 8px;">
+                <span>📻 Radio AM</span>
+              </button>
+              <button type="button" class="btn btn-ghost btn-sm voice-preset-btn" onclick="setVoicePreset('hyper_speed', this)" style="font-size: 11px; padding: 6px 6px; justify-content: center; border-radius: 8px;">
+                <span>🚀 Hyper Fast</span>
+              </button>
+              <button type="button" class="btn btn-ghost btn-sm voice-preset-btn" onclick="setVoicePreset('echo_hall', this)" style="font-size: 11px; padding: 6px 6px; justify-content: center; border-radius: 8px;">
+                <span>🏛️ Echo Hall</span>
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- Section 3: Smart Context Question Suggestions & AI Answer Studio -->
+      <div class="panel" id="tabPaneQuestions" style="padding: 24px; display: flex; flex-direction: column; gap: 20px;">
+        
+        <!-- Header -->
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+          <div>
+            <div style="font-size: 16px; font-weight: 700; color: var(--text-main); display: flex; align-items: center; gap: 8px;">
+              <i data-lucide="sparkles" style="width: 18px; height: 18px; color: var(--cyan-primary);"></i>
+              <span>Smart Context Questions & AI Answers</span>
+            </div>
+            <div style="font-size: 12.5px; color: var(--text-muted); margin-top: 2px;">
+              Click any suggested question below or ask your own to get a concise, simple English answer instantly.
+            </div>
+          </div>
+          <span style="font-size: 11px; font-family: var(--font-mono); color: var(--cyan-primary); background: var(--cyan-dim); padding: 3px 10px; border-radius: 100px;">Concise Simple English</span>
+        </div>
+
+        <!-- Dynamic Context Question Suggestions (Replaces static transcript) -->
+        <div>
+          <div style="font-size: 12px; font-weight: 600; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 10px;">
+            Suggested Questions from Discussion Context
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;" id="suggestedQuestionsGrid">
+            {% if meeting.suggested_questions %}
+              {% for sq in meeting.suggested_questions %}
+                <button type="button" class="question-pill-card" onclick="askAiCopilot('{{ sq|replace('\'', '\\\'') }}')">
+                  <span>💡 {{ sq }}</span>
+                  <i data-lucide="arrow-right" style="width: 14px; height: 14px; color: var(--cyan-primary); flex-shrink: 0;"></i>
+                </button>
+              {% endfor %}
+            {% else %}
+              <button type="button" class="question-pill-card" onclick="askAiCopilot('What is the confirmed product launch date and next milestone?')">
+                <span>📅 What is the confirmed product launch date?</span>
+                <i data-lucide="arrow-right" style="width: 14px; height: 14px; color: var(--cyan-primary); flex-shrink: 0;"></i>
+              </button>
+
+              <button type="button" class="question-pill-card" onclick="askAiCopilot('What deliverables are assigned to the team?')">
+                <span>📋 What deliverables are assigned to the team?</span>
+                <i data-lucide="arrow-right" style="width: 14px; height: 14px; color: var(--cyan-primary); flex-shrink: 0;"></i>
+              </button>
+
+              <button type="button" class="question-pill-card" onclick="askAiCopilot('What was decided regarding the budget?')">
+                <span>💰 What was decided regarding the budget?</span>
+                <i data-lucide="arrow-right" style="width: 14px; height: 14px; color: var(--cyan-primary); flex-shrink: 0;"></i>
+              </button>
+
+              <button type="button" class="question-pill-card" onclick="askAiCopilot('What was the overall voice mood, aggression level, and slang usage?')">
+                <span>🎙️ What was the voice mood and slang usage?</span>
+                <i data-lucide="arrow-right" style="width: 14px; height: 14px; color: var(--cyan-primary); flex-shrink: 0;"></i>
+              </button>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- AI Q&A Answer History -->
+        <div id="aiChatHistory" style="display: flex; flex-direction: column; gap: 12px; min-height: 120px; max-height: 320px; overflow-y: auto; padding: 14px; border-radius: 12px; background: var(--bg-input); border: 1px solid var(--border-color);">
+          <div style="display: flex; gap: 10px; font-size: 13px; color: var(--text-muted);">
+            <div style="width: 28px; height: 28px; border-radius: 50%; background: rgba(6, 182, 212, 0.18); color: var(--cyan-primary); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+              <i data-lucide="bot" style="width: 16px; height: 16px;"></i>
+            </div>
+            <div>
+              <div style="font-weight: 700; color: var(--text-main); margin-bottom: 2px;">AI Meeting Assistant</div>
+              <div style="line-height: 1.5;">Click any suggested question above or type your question below. I will give you a short, concise answer in simple English.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Custom Question Input Box -->
+        <div style="display: flex; gap: 8px;">
+          <input type="text" id="aiCopilotInput" placeholder="Ask anything about this meeting in simple words..." onkeydown="if(event.key==='Enter') askAiCopilot(this.value)" style="flex: 1; padding: 11px 16px; border-radius: 10px; background: var(--bg-input); border: 1px solid var(--border-color); color: var(--text-main); font-size: 13.5px; outline: none;">
+          <button type="button" class="btn btn-primary" onclick="askAiCopilot(document.getElementById('aiCopilotInput').value)" style="padding: 0 20px;">
+            <i data-lucide="send" style="width: 15px; height: 15px;"></i>
+            <span>Ask AI</span>
+          </button>
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- Real Audio Element Playing the Uploaded Audio -->
+  <audio id="realMeetingAudio" src="{{ url_for('uploaded_file', filename=meeting.audio_filename) if meeting.audio_filename else '' }}" preload="metadata"></audio>
+
+  <!-- Sticky Audio Player Bar with Live AI Voice Enhancer -->
+  <div class="sticky-audio-bar">
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <button type="button" class="player-play-btn" onclick="togglePlay(this)">
+        <i id="pIcon" data-lucide="play" style="width: 16px; height: 16px; margin-left: 2px;"></i>
+      </button>
+      <div id="playerTimeDisplay" style="font-family: var(--font-mono); font-size: 12px; color: var(--text-main); min-width: 90px;">
+        00:00 / {{ '%02d:%02d'|format((meeting.duration_seconds // 60), (meeting.duration_seconds % 60)) }}
+      </div>
+    </div>
+
+    <!-- Scrubber -->
+    <div class="player-scrubber" id="playerScrubberTrack" onclick="seekAudio(event)">
+      <div class="player-progress" id="playerProgressBar" style="width: 0%;"></div>
+    </div>
+
+    <!-- Voice Changer & Enhancer Controls -->
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <!-- Voice Changer Studio Dropdown Button -->
+      <div style="position: relative; display: inline-block;">
+        <button type="button" class="btn btn-ghost btn-sm" id="playerVoiceChangerBtn" onclick="toggleVoiceChangerMenu()" title="Select Voice Changer Preset" style="display: flex; align-items: center; gap: 6px; padding: 5px 10px; font-size: 11.5px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-input);">
+          <i data-lucide="sliders" style="width: 13px; height: 13px; color: var(--cyan-primary);"></i>
+          <span id="playerVoicePresetLabel" style="font-weight: 600; color: var(--cyan-primary);">Voice: Natural</span>
+          <i data-lucide="chevron-up" style="width: 12px; height: 12px;"></i>
+        </button>
+
+        <!-- Dropup Menu for Voice Presets -->
+        <div id="voiceChangerDropup" style="display: none; position: absolute; bottom: 125%; right: 0; min-width: 210px; background: var(--bg-card); border: 1px solid var(--border-bright); border-radius: 12px; padding: 6px; box-shadow: 0 12px 30px rgba(0,0,0,0.6); z-index: 1000; flex-direction: column; gap: 3px;">
+          <div style="font-size: 10px; font-weight: 700; color: var(--text-dim); text-transform: uppercase; padding: 4px 8px; letter-spacing: .06em;">Live Voice Morph</div>
+          <button type="button" class="btn btn-ghost btn-sm" onclick="setVoicePreset('natural'); toggleVoiceChangerMenu();" style="justify-content: flex-start; gap: 8px; font-size: 11.5px; padding: 5px 8px; width: 100%;">🎙️ Natural / Original</button>
+          <button type="button" class="btn btn-ghost btn-sm" onclick="setVoicePreset('deep_male'); toggleVoiceChangerMenu();" style="justify-content: flex-start; gap: 8px; font-size: 11.5px; padding: 5px 8px; width: 100%;">👨 Deep Male (Baritone)</button>
+          <button type="button" class="btn btn-ghost btn-sm" onclick="setVoicePreset('studio_female'); toggleVoiceChangerMenu();" style="justify-content: flex-start; gap: 8px; font-size: 11.5px; padding: 5px 8px; width: 100%;">👩 Female (Crisp Warm)</button>
+          <button type="button" class="btn btn-ghost btn-sm" onclick="setVoicePreset('child'); toggleVoiceChangerMenu();" style="justify-content: flex-start; gap: 8px; font-size: 11.5px; padding: 5px 8px; width: 100%;">👶 Young Kid / Child</button>
+          <button type="button" class="btn btn-ghost btn-sm" onclick="setVoicePreset('robot'); toggleVoiceChangerMenu();" style="justify-content: flex-start; gap: 8px; font-size: 11.5px; padding: 5px 8px; width: 100%;">🤖 Cyber AI Robot</button>
+          <button type="button" class="btn btn-ghost btn-sm" onclick="setVoicePreset('radio'); toggleVoiceChangerMenu();" style="justify-content: flex-start; gap: 8px; font-size: 11.5px; padding: 5px 8px; width: 100%;">📻 Vintage Radio AM</button>
+          <button type="button" class="btn btn-ghost btn-sm" onclick="setVoicePreset('hyper_speed'); toggleVoiceChangerMenu();" style="justify-content: flex-start; gap: 8px; font-size: 11.5px; padding: 5px 8px; width: 100%;">🚀 Hyper Fast Brief</button>
+          <button type="button" class="btn btn-ghost btn-sm" onclick="setVoicePreset('echo_hall'); toggleVoiceChangerMenu();" style="justify-content: flex-start; gap: 8px; font-size: 11.5px; padding: 5px 8px; width: 100%;">🏛️ Echo Hall Acoustic</button>
+        </div>
+      </div>
+
+      <!-- Voice Enhancer Switch -->
+      <button type="button" id="voiceEnhancerToggleBottom" class="enhancer-btn active" onclick="toggleVoiceEnhancer()" title="AI Voice Enhancer: Boosts speech clarity and eliminates noise" style="padding: 5px 10px; font-size: 11.5px;">
+        <i data-lucide="sparkles" style="width: 13px; height: 13px;"></i>
+        <span>Enhancer: ON</span>
+      </button>
+
+      <button type="button" class="btn btn-ghost btn-sm" id="playbackSpeedBtn" onclick="changePlaybackSpeed()" style="padding: 4px 8px; font-family: var(--font-mono); font-size: 11px;">1x</button>
+      
+      <button type="button" class="btn btn-ghost btn-sm" style="padding: 4px;" title="Close Player" onclick="this.closest('.sticky-audio-bar').style.display='none'">
+        <i data-lucide="x" style="width: 14px; height: 14px;"></i>
+      </button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  function switchMeetingTab(tab, btn) {
+    document.querySelectorAll('.m-tab-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    
+    if (tab === 'questions') {
+      document.getElementById('tabPaneQuestions').scrollIntoView({ behavior: 'smooth' });
+    } else if (tab === 'overview') {
+      document.getElementById('tabPaneOverview').scrollIntoView({ behavior: 'smooth' });
+    } else {
+      document.getElementById('tabPanePointsSentiment').scrollIntoView({ behavior: 'smooth' });
+    }
+  }
+
+  function toggleVoiceChangerMenu() {
+    const menu = document.getElementById('voiceChangerDropup');
+    if (!menu) return;
+    menu.style.display = menu.style.display === 'flex' ? 'none' : 'flex';
+  }
+
+  // Close dropup if clicked outside
+  document.addEventListener('click', function(e) {
+    const btn = document.getElementById('playerVoiceChangerBtn');
+    const menu = document.getElementById('voiceChangerDropup');
+    if (menu && btn && !btn.contains(e.target) && !menu.contains(e.target)) {
+      menu.style.display = 'none';
+    }
+  });
+
+  // Voice Enhancer Live Switch & Audio EQ Changer
+  let isVoiceEnhanced = true;
+  let audioCtx = null;
+  let audioSource = null;
+  let filterNode = null;
+  let bassFilter = null;
+  let trebleFilter = null;
+
+  function initWebAudioEnhancer() {
+    if (!audioCtx) {
+      try {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        audioCtx = new AudioContext();
+        const audio = document.getElementById('realMeetingAudio');
+        audioSource = audioCtx.createMediaElementSource(audio);
+
+        filterNode = audioCtx.createBiquadFilter();
+        filterNode.type = 'peaking';
+        filterNode.frequency.value = 2800; // speech clarity frequency
+        filterNode.gain.value = 6.0;
+
+        bassFilter = audioCtx.createBiquadFilter();
+        bassFilter.type = 'lowshelf';
+        bassFilter.frequency.value = 180;
+        bassFilter.gain.value = 0.0;
+
+        trebleFilter = audioCtx.createBiquadFilter();
+        trebleFilter.type = 'highshelf';
+        trebleFilter.frequency.value = 3500;
+        trebleFilter.gain.value = 0.0;
+
+        audioSource.connect(filterNode);
+        filterNode.connect(bassFilter);
+        bassFilter.connect(trebleFilter);
+        trebleFilter.connect(audioCtx.destination);
+      } catch (e) {
+        console.log('Web Audio init note:', e);
+      }
+    }
+  }
+
+  function setVoicePreset(preset, btn) {
+    initWebAudioEnhancer();
+    const audio = document.getElementById('realMeetingAudio');
+    document.querySelectorAll('.voice-preset-btn').forEach(b => b.classList.remove('active'));
+    if (btn) btn.classList.add('active');
+
+    const badge = document.getElementById('activeVoicePresetBadge');
+    const playerLabel = document.getElementById('playerVoicePresetLabel');
+
+    if (preset === 'natural') {
+      audio.playbackRate = 1.0;
+      if (bassFilter) bassFilter.gain.value = 0;
+      if (trebleFilter) trebleFilter.gain.value = 0;
+      if (filterNode) {
+        filterNode.type = 'peaking';
+        filterNode.frequency.value = 2800;
+        filterNode.gain.value = isVoiceEnhanced ? 6.0 : 0.0;
+      }
+      if (badge) badge.textContent = '🎙️ Natural';
+      if (playerLabel) playerLabel.textContent = 'Voice: Natural';
+      showToast('Voice reset to Natural Original Audio', 'info', 'Original Voice');
+    } else if (preset === 'deep_male') {
+      audio.playbackRate = 0.85;
+      if (bassFilter) bassFilter.gain.value = 10.0;
+      if (trebleFilter) trebleFilter.gain.value = -4.0;
+      if (filterNode) {
+        filterNode.type = 'peaking';
+        filterNode.frequency.value = 2200;
+        filterNode.gain.value = 4.0;
+      }
+      if (badge) badge.textContent = '👨 Deep Male';
+      if (playerLabel) playerLabel.textContent = 'Voice: Deep Male';
+      showToast('Voice morphed to Deep Male / Executive Baritone', 'success', 'Deep Male Voice');
+    } else if (preset === 'studio_female') {
+      audio.playbackRate = 1.15;
+      if (bassFilter) bassFilter.gain.value = -3.0;
+      if (trebleFilter) trebleFilter.gain.value = 8.0;
+      if (filterNode) {
+        filterNode.type = 'peaking';
+        filterNode.frequency.value = 3200;
+        filterNode.gain.value = 6.0;
+      }
+      if (badge) badge.textContent = '👩 Female';
+      if (playerLabel) playerLabel.textContent = 'Voice: Female';
+      showToast('Voice morphed to Crisp Studio Female Profile', 'success', 'Female Voice');
+    } else if (preset === 'child') {
+      audio.playbackRate = 1.35;
+      if (bassFilter) bassFilter.gain.value = -6.0;
+      if (trebleFilter) trebleFilter.gain.value = 10.0;
+      if (filterNode) {
+        filterNode.type = 'peaking';
+        filterNode.frequency.value = 3800;
+        filterNode.gain.value = 8.0;
+      }
+      if (badge) badge.textContent = '👶 Young Kid';
+      if (playerLabel) playerLabel.textContent = 'Voice: Kid';
+      showToast('Voice morphed to High Pitch Young Child Profile', 'success', 'Kid Voice');
+    } else if (preset === 'robot') {
+      audio.playbackRate = 0.95;
+      if (filterNode) {
+        filterNode.type = 'bandpass';
+        filterNode.frequency.value = 1200;
+        filterNode.Q.value = 4.0;
+      }
+      if (badge) badge.textContent = '🤖 AI Robot';
+      if (playerLabel) playerLabel.textContent = 'Voice: AI Robot';
+      showToast('Voice morphed to Cybernetic AI Robot', 'success', 'AI Robot Voice');
+    } else if (preset === 'radio') {
+      audio.playbackRate = 1.0;
+      if (filterNode) {
+        filterNode.type = 'bandpass';
+        filterNode.frequency.value = 1800;
+        filterNode.Q.value = 1.2;
+      }
+      if (badge) badge.textContent = '📻 Radio AM';
+      if (playerLabel) playerLabel.textContent = 'Voice: Radio AM';
+      showToast('Voice morphed to Vintage Radio Broadcast', 'success', 'Radio Voice');
+    } else if (preset === 'hyper_speed') {
+      audio.playbackRate = 1.6;
+      if (bassFilter) bassFilter.gain.value = -2.0;
+      if (trebleFilter) trebleFilter.gain.value = 4.0;
+      if (badge) badge.textContent = '🚀 Hyper Fast';
+      if (playerLabel) playerLabel.textContent = 'Voice: Hyper 1.6x';
+      showToast('Voice accelerated with Hyper Speed Pitch', 'info', 'Hyper Speed Voice');
+    } else if (preset === 'echo_hall') {
+      audio.playbackRate = 0.92;
+      if (bassFilter) bassFilter.gain.value = 4.0;
+      if (trebleFilter) trebleFilter.gain.value = 6.0;
+      if (filterNode) {
+        filterNode.type = 'allpass';
+        filterNode.frequency.value = 800;
+      }
+      if (badge) badge.textContent = '🏛️ Echo Hall';
+      if (playerLabel) playerLabel.textContent = 'Voice: Echo Hall';
+      showToast('Voice morphed with Grand Echo Hall acoustics', 'success', 'Echo Hall');
+    }
+
+    if (window.lucide) lucide.createIcons();
+  }
+
+  function toggleVoiceEnhancer() {
+    initWebAudioEnhancer();
+    isVoiceEnhanced = !isVoiceEnhanced;
+    if (filterNode && filterNode.type === 'peaking') {
+      filterNode.gain.value = isVoiceEnhanced ? 6.0 : 0.0;
+    }
+
+    const btns = [document.getElementById('voiceEnhancerToggleTop'), document.getElementById('voiceEnhancerToggleBottom')];
+    btns.forEach(btn => {
+      if (btn) {
+        btn.classList.toggle('active', isVoiceEnhanced);
+        btn.querySelector('span').textContent = isVoiceEnhanced ? 'AI Voice Enhancer: ON' : 'AI Voice Enhancer: OFF';
+      }
+    });
+
+    if (isVoiceEnhanced) {
+      showToast('AI Voice Enhancer enabled: Noise suppression & vocal clarity boosted.', 'success', 'Voice Enhanced');
+    } else {
+      showToast('AI Voice Enhancer disabled: Normal raw audio mode.', 'info', 'Raw Audio');
+    }
+  }
+
+  // Real Audio Controller
+  const realAudio = document.getElementById('realMeetingAudio');
+  const playBtnIcon = document.getElementById('pIcon');
+  const timeDisplay = document.getElementById('playerTimeDisplay');
+  const progressBar = document.getElementById('playerProgressBar');
+
+  function formatTime(secs) {
+    if (isNaN(secs)) return '00:00';
+    const m = String(Math.floor(secs / 60)).padStart(2, '0');
+    const s = String(Math.floor(secs % 60)).padStart(2, '0');
+    return `${m}:${s}`;
+  }
+
+  function togglePlay() {
+    initWebAudioEnhancer();
+    if (audioCtx && audioCtx.state === 'suspended') {
+      audioCtx.resume();
+    }
+
+    if (realAudio.paused) {
+      realAudio.play().then(() => {
+        playBtnIcon.setAttribute('data-lucide', 'pause');
+        if (window.lucide) lucide.createIcons();
+      }).catch(err => {
+        console.log('Playback error:', err);
+      });
+    } else {
+      realAudio.pause();
+      playBtnIcon.setAttribute('data-lucide', 'play');
+      if (window.lucide) lucide.createIcons();
+    }
+  }
+
+  if (realAudio) {
+    realAudio.addEventListener('timeupdate', () => {
+      const cur = realAudio.currentTime;
+      const dur = realAudio.duration || {{ meeting.duration_seconds }};
+      const pct = (cur / dur) * 100;
+      if (progressBar) progressBar.style.width = pct + '%';
+      if (timeDisplay) timeDisplay.textContent = `${formatTime(cur)} / ${formatTime(dur)}`;
+    });
+
+    realAudio.addEventListener('ended', () => {
+      playBtnIcon.setAttribute('data-lucide', 'play');
+      if (window.lucide) lucide.createIcons();
+    });
+  }
+
+  function seekAudio(e) {
+    const track = document.getElementById('playerScrubberTrack');
+    const rect = track.getBoundingClientRect();
+    const pos = (e.clientX - rect.left) / rect.width;
+    const dur = realAudio.duration || {{ meeting.duration_seconds }};
+    realAudio.currentTime = pos * dur;
+  }
+
+  const speeds = [1, 1.25, 1.5, 2];
+  let speedIdx = 0;
+  function changePlaybackSpeed() {
+    speedIdx = (speedIdx + 1) % speeds.length;
+    realAudio.playbackRate = speeds[speedIdx];
+    document.getElementById('playbackSpeedBtn').textContent = speeds[speedIdx] + 'x';
+  }
+
+  // AI Copilot Query Execution with Concise Simple English Output
+  async function askAiCopilot(msg) {
+    if (!msg || !msg.trim()) return;
+    const chatContainer = document.getElementById('aiChatHistory');
+    const input = document.getElementById('aiCopilotInput');
+    input.value = '';
+
+    // Append user question
+    const userDiv = document.createElement('div');
+    userDiv.style.cssText = 'display:flex; justify-content:flex-end; margin-top:4px;';
+    userDiv.innerHTML = `<div style="padding:9px 15px; border-radius:12px 12px 2px 12px; background:var(--cyan-dim); color:var(--text-main); font-size:13px; max-width:85%; border:1px solid rgba(6,182,212,0.3); font-weight:500;">${msg}</div>`;
+    chatContainer.appendChild(userDiv);
+
+    // Typing placeholder
+    const typingDiv = document.createElement('div');
+    typingDiv.id = 'aiTypingBubble';
+    typingDiv.style.cssText = 'display:flex; gap:10px; padding:10px 14px; border-radius:12px; background:var(--bg-card); font-size:13px; color:var(--cyan-primary); align-items:center;';
+    typingDiv.innerHTML = `<i data-lucide="loader-2" style="width:15px; height:15px; animation:spin 1s linear infinite;"></i><span>Finding concise answer in simple English...</span>`;
+    chatContainer.appendChild(typingDiv);
+    if (window.lucide) lucide.createIcons();
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+
+    try {
+      const res = await fetch('{{ url_for("meeting_chat_api", meeting_id=meeting.id) }}', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: msg })
+      });
+      const data = await res.json();
+      typingDiv.remove();
+
+      // Append concise simple English AI answer
+      const aiDiv = document.createElement('div');
+      aiDiv.style.cssText = 'display:flex; gap:10px; padding:12px 16px; border-radius:12px; background:var(--bg-card); font-size:13px; color:var(--text-main); line-height:1.6; border:1px solid var(--border-color);';
+      aiDiv.innerHTML = `
+        <div style="width:26px; height:26px; border-radius:50%; background:rgba(6,182,212,0.2); color:var(--cyan-primary); display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-top:2px;">
+          <i data-lucide="sparkles" style="width:14px; height:14px;"></i>
+        </div>
+        <div style="flex:1;">
+          <div style="font-weight:700; font-size:12px; color:var(--cyan-primary); margin-bottom:3px; text-transform:uppercase; letter-spacing:0.04em;">Answer (Simple & Concise)</div>
+          <div style="color:var(--text-main);">${data.reply || 'Answer ready.'}</div>
+        </div>
+      `;
+      chatContainer.appendChild(aiDiv);
+      if (window.lucide) lucide.createIcons();
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+
+    } catch (err) {
+      typingDiv.remove();
+      showToast('Error getting answer from AI assistant.', 'error', 'Error');
+    }
+  }
+
+  async function applyTemplate(templateType) {
+    document.getElementById('templateDropdownMenu')?.classList.remove('show');
+    showToast('Regenerating meeting intelligence with ' + templateType.toUpperCase() + ' template...', 'info', 'Template Switch');
+    try {
+      const res = await fetch('/api/meeting/{{ meeting.id }}/resummarize', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ template_type: templateType })
+      });
+      const data = await res.json();
+      if (data.success) {
+        showToast('Template applied successfully! Reloading...', 'success', 'Success');
+        setTimeout(() => window.location.reload(), 600);
+      } else {
+        showToast(data.error || 'Failed to re-summarize', 'error', 'Error');
+      }
+    } catch (e) {
+      showToast('Network error while applying template', 'error', 'Error');
+    }
+  }
+</script>
+{% endblock %}

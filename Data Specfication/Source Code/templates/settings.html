@@ -1,0 +1,849 @@
+{% extends "base.html" %}
+
+{% block title %}Settings — TalkToText Pro{% endblock %}
+
+{% block extra_head %}
+<style>
+  .settings-layout-grid {
+    display: grid;
+    grid-template-columns: 210px 1fr;
+    gap: 24px;
+    max-width: 1000px;
+    margin-top: 8px;
+  }
+  @media (max-width: 850px) {
+    .settings-layout-grid { grid-template-columns: 1fr; }
+  }
+
+  .settings-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    border-radius: 9px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-muted);
+    transition: all 0.15s ease;
+    margin-bottom: 3px;
+    cursor: pointer;
+    background: transparent;
+    border: none;
+    width: 100%;
+    text-align: left;
+  }
+  .settings-nav-item:hover { background: var(--bg-card); color: var(--text-main); }
+  .settings-nav-item.active { background: var(--bg-card); color: var(--cyan-primary); font-weight: 600; }
+  .settings-nav-item svg { width: 16px; height: 16px; flex-shrink: 0; }
+
+  /* Settings Pane Container */
+  .settings-pane {
+    display: none;
+    flex-direction: column;
+    gap: 22px;
+  }
+  .settings-pane.active {
+    display: flex;
+    animation: paneFadeIn 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  @keyframes paneFadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Form Elements */
+  .setting-input {
+    width: 100%;
+    padding: 10px 14px;
+    border-radius: 9px;
+    background: var(--bg-input);
+    border: 1px solid var(--border-color);
+    color: var(--text-main);
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.15s ease;
+  }
+  .setting-input:focus {
+    border-color: var(--cyan-primary);
+  }
+
+  /* Theme Radio Pills */
+  .theme-radio-group {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+  }
+  .theme-radio-btn {
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 12.5px;
+    font-weight: 500;
+    background: var(--bg-input);
+    border: 1px solid var(--border-color);
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .theme-radio-btn:hover { color: var(--text-main); border-color: var(--border-bright); }
+  .theme-radio-btn.active {
+    background: var(--bg-card);
+    border-color: var(--cyan-primary);
+    color: var(--cyan-primary);
+    font-weight: 600;
+  }
+
+  /* Color Picker Dots */
+  .color-dot {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: transform 0.15s ease;
+  }
+  .color-dot:hover { transform: scale(1.18); }
+  .color-dot.active { border-color: #FFFFFF; box-shadow: 0 0 12px rgba(255,255,255,0.4); }
+
+  /* Switch Toggle */
+  .toggle-switch-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 0;
+    border-top: 1px solid var(--border-color);
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div>
+  <h1 style="font-size: 22px; font-weight: 700; color: var(--text-main); margin-bottom: 20px;">Workspace Settings</h1>
+
+  <div class="settings-layout-grid">
+    
+    <!-- Left Navigation List (All 9 Tabs) -->
+    <div style="display: flex; flex-direction: column;">
+      <button type="button" class="settings-nav-item active" onclick="switchSettingsTab('account', this)"><i data-lucide="user"></i><span>Account</span></button>
+      <button type="button" class="settings-nav-item" onclick="switchSettingsTab('profile', this)"><i data-lucide="user-check"></i><span>Profile</span></button>
+      <button type="button" class="settings-nav-item" onclick="switchSettingsTab('security', this)"><i data-lucide="lock"></i><span>Password & Security</span></button>
+      <button type="button" class="settings-nav-item" onclick="switchSettingsTab('api-keys', this)"><i data-lucide="key"></i><span>API Keys & Metering</span></button>
+      <button type="button" class="settings-nav-item" onclick="switchSettingsTab('digest', this)"><i data-lucide="mail"></i><span>Weekly Digest</span></button>
+      <button type="button" class="settings-nav-item" onclick="switchSettingsTab('preferences', this)"><i data-lucide="sliders"></i><span>Preferences</span></button>
+      <button type="button" class="settings-nav-item" onclick="switchSettingsTab('notifications', this)"><i data-lucide="bell"></i><span>Notifications</span></button>
+      <button type="button" class="settings-nav-item" onclick="switchSettingsTab('language', this)"><i data-lucide="globe"></i><span>Language</span></button>
+      <button type="button" class="settings-nav-item" onclick="switchSettingsTab('theme', this)"><i data-lucide="palette"></i><span>Theme</span></button>
+      <button type="button" class="settings-nav-item" onclick="switchSettingsTab('integrations', this)"><i data-lucide="layers"></i><span>Integrations</span></button>
+      <button type="button" class="settings-nav-item" onclick="switchSettingsTab('billing', this)"><i data-lucide="credit-card"></i><span>Billing</span></button>
+    </div>
+
+    <!-- Right Settings Panel Outlet -->
+    <div class="panel" style="padding: 28px;">
+      
+      <!-- ── TAB 1: ACCOUNT ───────────────────────────────────────────── -->
+      <div id="pane-account" class="settings-pane active">
+        <div>
+          <div style="font-size: 16px; font-weight: 700; color: var(--text-main); margin-bottom: 4px;">Account Overview</div>
+          <div style="font-size: 12.5px; color: var(--text-muted);">Manage your primary account credentials and organization role.</div>
+        </div>
+
+        <form method="POST" action="{{ url_for('settings_page') }}" style="display: flex; flex-direction: column; gap: 16px;">
+          <div>
+            <label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 6px;">Full Name</label>
+            <input type="text" name="name" value="{{ user.name if user else session.get('user_name', 'Nasrullah') }}" class="setting-input" required>
+          </div>
+
+          <div>
+            <label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 6px;">Email Address</label>
+            <input type="email" value="{{ user.email if user else session.get('user_email', 'nasrullah@example.com') }}" class="setting-input" disabled style="opacity: 0.7; cursor: not-allowed;">
+            <div style="font-size: 11px; color: var(--text-dim); margin-top: 4px;">Email is linked to your primary login account.</div>
+          </div>
+
+          <div>
+            <label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 6px;">Job Title / Role</label>
+            <input type="text" name="title" value="{{ user.title if user and user.title else 'Product Lead' }}" placeholder="e.g. Lead Engineer, Product Manager" class="setting-input">
+          </div>
+
+          <div>
+            <label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 6px;">Timezone</label>
+            <select name="timezone" class="setting-input">
+              <option value="UTC" selected>UTC (Coordinated Universal Time)</option>
+              <option value="Asia/Karachi">Asia/Karachi (PKT +05:00)</option>
+              <option value="America/New_York">America/New York (EST -05:00)</option>
+              <option value="Europe/London">Europe/London (GMT +00:00)</option>
+            </select>
+          </div>
+
+          <div style="margin-top: 8px;">
+            <button type="submit" class="btn btn-primary" style="padding: 10px 24px;">Save Account Changes</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- ── TAB 2: PROFILE ───────────────────────────────────────────── -->
+      <div id="pane-profile" class="settings-pane">
+        <div>
+          <div style="font-size: 16px; font-weight: 700; color: var(--text-main); margin-bottom: 4px;">Public Profile & Bio</div>
+          <div style="font-size: 12.5px; color: var(--text-muted);">How your name and details appear across shared meeting briefs.</div>
+        </div>
+
+        <form method="POST" action="{{ url_for('upload_avatar_route') }}" enctype="multipart/form-data" id="avatarUploadForm">
+          <input type="file" id="realAvatarInput" name="avatar_file" accept="image/png,image/jpeg,image/webp" style="display: none;" onchange="document.getElementById('avatarUploadForm').submit()">
+          <div style="display: flex; align-items: center; gap: 16px; padding: 16px; border-radius: 12px; background: var(--bg-input); border: 1px solid var(--border-color);">
+            <div style="width: 52px; height: 52px; border-radius: 50%; background: var(--cyan-gradient); color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 700; overflow: hidden;">
+              {% if user and user.avatar_url %}
+                <img src="{{ user.avatar_url }}" style="width: 100%; height: 100%; object-fit: cover;">
+              {% else %}
+                {{ (session.get('user_name', 'N') or 'N')[:1]|upper }}
+              {% endif %}
+            </div>
+            <div>
+              <div style="font-size: 14px; font-weight: 600; color: var(--text-main);">Profile Picture</div>
+              <div style="font-size: 12px; color: var(--text-muted);">Upload JPG, PNG, or WebP image. Saves to database.</div>
+            </div>
+            <button type="button" class="btn btn-primary btn-sm" onclick="document.getElementById('realAvatarInput').click()" style="margin-left: auto;">Upload Picture</button>
+          </div>
+        </form>
+
+        <form method="POST" action="{{ url_for('settings_page') }}" style="display: flex; flex-direction: column; gap: 16px;">
+          <input type="hidden" name="name" value="{{ user.name if user else session.get('user_name', 'Nasrullah') }}">
+          <div>
+            <label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 6px;">Biography & Department</label>
+            <textarea name="title" class="setting-input" rows="3" placeholder="Tell your team a little about your focus area...">{{ user.title if user and user.title else 'Executive strategy lead overseeing digital product development and AI productivity workflows.' }}</textarea>
+          </div>
+
+          <div>
+            <button type="submit" class="btn btn-primary" style="padding: 10px 24px;">Save Profile in DB</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- ── TAB 3: PASSWORD & SECURITY ───────────────────────────────── -->
+      <div id="pane-security" class="settings-pane">
+        <div>
+          <div style="font-size: 16px; font-weight: 700; color: var(--text-main); margin-bottom: 4px;">Password & Security</div>
+          <div style="font-size: 12.5px; color: var(--text-muted);">Update your password and review active workspace authentication sessions.</div>
+        </div>
+
+        <form method="POST" action="{{ url_for('update_password_route') }}" style="display: flex; flex-direction: column; gap: 14px;">
+          <div>
+            <label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 6px;">Current Password</label>
+            <div style="position: relative; display: flex; align-items: center;">
+              <input type="password" id="currPassInput" name="current_password" required placeholder="••••••••" class="setting-input" style="padding-right: 40px;">
+              <button type="button" onclick="toggleSettingsPass('currPassInput', 'eyeIconCurr')" style="position: absolute; right: 12px; background: none; border: none; color: var(--text-dim); cursor: pointer; display: flex; align-items: center;">
+                <i id="eyeIconCurr" data-lucide="eye" style="width: 16px; height: 16px;"></i>
+              </button>
+            </div>
+          </div>
+
+          <div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+              <label style="font-size: 12px; font-weight: 600; color: var(--text-muted);">New Password</label>
+              <span id="settingsStrengthBadge" style="font-size: 11px; font-family: var(--font-mono); font-weight: 600; color: var(--text-dim);">Enter new password</span>
+            </div>
+            <div style="position: relative; display: flex; align-items: center;">
+              <input type="password" id="settingsNewPass" name="new_password" required minlength="6" placeholder="••••••••" class="setting-input" style="padding-right: 40px;" oninput="validateSettingsLivePassword()">
+              <button type="button" onclick="toggleSettingsPass('settingsNewPass', 'eyeIconNew')" style="position: absolute; right: 12px; background: none; border: none; color: var(--text-dim); cursor: pointer; display: flex; align-items: center;">
+                <i id="eyeIconNew" data-lucide="eye" style="width: 16px; height: 16px;"></i>
+              </button>
+            </div>
+            <!-- 4-Stage Strength Bar -->
+            <div style="display: flex; gap: 4px; margin-top: 6px;">
+              <div id="sbar1" style="height: 3px; flex: 1; border-radius: 3px; background: rgba(255,255,255,0.1); transition: all 0.3s ease;"></div>
+              <div id="sbar2" style="height: 3px; flex: 1; border-radius: 3px; background: rgba(255,255,255,0.1); transition: all 0.3s ease;"></div>
+              <div id="sbar3" style="height: 3px; flex: 1; border-radius: 3px; background: rgba(255,255,255,0.1); transition: all 0.3s ease;"></div>
+              <div id="sbar4" style="height: 3px; flex: 1; border-radius: 3px; background: rgba(255,255,255,0.1); transition: all 0.3s ease;"></div>
+            </div>
+          </div>
+
+          <div>
+            <label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 6px;">Confirm New Password</label>
+            <div style="position: relative; display: flex; align-items: center;">
+              <input type="password" id="settingsConfirmPass" name="confirm_password" required minlength="6" placeholder="••••••••" class="setting-input" style="padding-right: 40px;" oninput="validateSettingsMatch()">
+              <button type="button" onclick="toggleSettingsPass('settingsConfirmPass', 'eyeIconConf')" style="position: absolute; right: 12px; background: none; border: none; color: var(--text-dim); cursor: pointer; display: flex; align-items: center;">
+                <i id="eyeIconConf" data-lucide="eye" style="width: 16px; height: 16px;"></i>
+              </button>
+            </div>
+            <div id="settingsMatchMsg" style="font-size: 11px; margin-top: 4px; display: none;"></div>
+          </div>
+
+          <div style="margin-top: 6px;">
+            <button type="submit" class="btn btn-primary" style="padding: 10px 24px;">Update Password</button>
+          </div>
+        </form>
+
+        <div class="toggle-switch-row" style="margin-top: 10px;">
+          <div>
+            <div style="font-size: 13.5px; font-weight: 600; color: var(--text-main);">Two-Factor Authentication (2FA)</div>
+            <div style="font-size: 12px; color: var(--text-muted);">Require an authentication code when signing into your account.</div>
+          </div>
+          <input type="checkbox" checked onchange="showToast(this.checked ? '2FA enabled' : '2FA disabled', 'info')" style="width: 18px; height: 18px; accent-color: var(--cyan-primary); cursor: pointer;">
+        </div>
+      </div>
+
+      <!-- ── TAB 4: PREFERENCES / AI ──────────────────────────────────── -->
+      <div id="pane-preferences" class="settings-pane">
+        <div>
+          <div style="font-size: 16px; font-weight: 700; color: var(--text-main); margin-bottom: 4px;">AI Notes & Audio Preferences</div>
+          <div style="font-size: 12.5px; color: var(--text-muted);">Customize default meeting summary formats and audio processing parameters.</div>
+        </div>
+
+        <div>
+          <label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 6px;">Default Summary Style</label>
+          <select id="prefDefaultStyle" class="setting-input">
+            <option value="Executive Summary" selected>Executive Summary (Polished Strategic Memo)</option>
+            <option value="Detailed Summary">Detailed Minutes & Full Discussion Breakdown</option>
+            <option value="Short Summary">Short 3-Sentence High-Impact Takeaway</option>
+            <option value="Student Notes">Structured Academic Notes</option>
+            <option value="Action Items Only">Action Items Matrix Only</option>
+          </select>
+        </div>
+
+        <div class="toggle-switch-row">
+          <div>
+            <div style="font-size: 13.5px; font-weight: 600; color: var(--text-main);">Auto AI Voice Enhancer</div>
+            <div style="font-size: 12px; color: var(--text-muted);">Automatically apply noise suppression and vocal EQ on audio playback.</div>
+          </div>
+          <input type="checkbox" checked onchange="showToast('AI Voice Enhancer default updated!', 'success')" style="width: 18px; height: 18px; accent-color: var(--cyan-primary); cursor: pointer;">
+        </div>
+
+        <div class="toggle-switch-row">
+          <div>
+            <div style="font-size: 13.5px; font-weight: 600; color: var(--text-main);">Auto Question Suggestions</div>
+            <div style="font-size: 12px; color: var(--text-muted);">Generate context-driven suggested questions for all new meetings.</div>
+          </div>
+          <input type="checkbox" checked onchange="showToast('Question Suggestions active', 'success')" style="width: 18px; height: 18px; accent-color: var(--cyan-primary); cursor: pointer;">
+        </div>
+
+        <div>
+          <button type="button" class="btn btn-primary" onclick="showToast('AI and audio preferences saved!', 'success', 'Saved')" style="padding: 10px 24px;">Save Preferences</button>
+        </div>
+      </div>
+
+      <!-- ── TAB 5: NOTIFICATIONS ─────────────────────────────────────── -->
+      <div id="pane-notifications" class="settings-pane">
+        <div>
+          <div style="font-size: 16px; font-weight: 700; color: var(--text-main); margin-bottom: 4px;">Notification Settings</div>
+          <div style="font-size: 12.5px; color: var(--text-muted);">Manage email digests and real-time processing alerts.</div>
+        </div>
+
+        <div class="toggle-switch-row">
+          <div>
+            <div style="font-size: 13.5px; font-weight: 600; color: var(--text-main);">Meeting Processing Completed</div>
+            <div style="font-size: 12px; color: var(--text-muted);">Receive an in-app and browser notification when audio notes are ready.</div>
+          </div>
+          <input type="checkbox" checked onchange="showToast('Notification updated!', 'info')" style="width: 18px; height: 18px; accent-color: var(--cyan-primary); cursor: pointer;">
+        </div>
+
+        <div class="toggle-switch-row">
+          <div>
+            <div style="font-size: 13.5px; font-weight: 600; color: var(--text-main);">Action Item Assignment Alerts</div>
+            <div style="font-size: 12px; color: var(--text-muted);">Alert team members when deliverables are assigned to their name.</div>
+          </div>
+          <input type="checkbox" checked onchange="showToast('Notification updated!', 'info')" style="width: 18px; height: 18px; accent-color: var(--cyan-primary); cursor: pointer;">
+        </div>
+
+        <div class="toggle-switch-row">
+          <div>
+            <div style="font-size: 13.5px; font-weight: 600; color: var(--text-main);">Weekly Velocity Digest</div>
+            <div style="font-size: 12px; color: var(--text-muted);">Email summary of completed meetings, decisions, and resolved action items.</div>
+          </div>
+          <input type="checkbox" checked onchange="showToast('Weekly digest preference updated!', 'info')" style="width: 18px; height: 18px; accent-color: var(--cyan-primary); cursor: pointer;">
+        </div>
+      </div>
+
+      <!-- ── TAB 6: LANGUAGE ──────────────────────────────────────────── -->
+      <div id="pane-language" class="settings-pane">
+        <div>
+          <div style="font-size: 16px; font-weight: 700; color: var(--text-main); margin-bottom: 4px;">Language & Regional Settings</div>
+          <div style="font-size: 12.5px; color: var(--text-muted);">Configure default speech detection and interface translations.</div>
+        </div>
+
+        <div>
+          <label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 6px;">Primary Audio Transcription Language</label>
+          <select id="prefDefaultLang" class="setting-input">
+            <option value="Auto-Detect" selected>🌐 Auto-Detect Multilingual Speech</option>
+            <option value="English">🇺🇸 English (Default)</option>
+            <option value="Urdu / Roman Urdu">🇵🇰 Urdu / Roman Urdu Translation</option>
+            <option value="Hindi">🇮🇳 Hindi</option>
+            <option value="Arabic">🇸🇦 Arabic (العربية)</option>
+            <option value="Spanish">🇪🇸 Spanish</option>
+          </select>
+        </div>
+
+        <div>
+          <label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 6px;">Interface Display Language</label>
+          <select class="setting-input">
+            <option value="en" selected>English (United States)</option>
+            <option value="ur">Urdu (اردو)</option>
+          </select>
+        </div>
+
+        <div>
+          <button type="button" class="btn btn-primary" onclick="showToast('Language settings saved successfully!', 'success', 'Saved')" style="padding: 10px 24px;">Save Language Settings</button>
+        </div>
+      </div>
+
+      <!-- ── TAB 7: THEME & APPEARANCE (2026 SaaS Flagship) ─────────── -->
+      <div id="pane-theme" class="settings-pane">
+        <div>
+          <div style="font-size: 16px; font-weight: 700; color: var(--text-main); margin-bottom: 4px;">Theme & Appearance</div>
+          <div style="font-size: 12.5px; color: var(--text-muted);">2026 SaaS Editorial design system with calm density and restrained accent tokens.</div>
+        </div>
+
+        <!-- 2026 SaaS Flagship Palettes -->
+        <div>
+          <div style="font-size: 12.5px; font-weight: 600; color: var(--text-muted); margin-bottom: 10px;">2026 Flagship Palettes</div>
+          <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
+            <div class="panel" onclick="set2026Palette('midnight_cyan', this)" style="padding: 14px; cursor: pointer; border: 2px solid var(--cyan-primary); background: #090D0F; border-radius: 10px;">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-size: 13px; font-weight: 700; color: #F3F7F7;">🥇 Midnight Cyan</span>
+                <span style="font-size: 10px; font-family: var(--font-mono); background: #12363C; color: #28C7D9; padding: 2px 6px; border-radius: 4px;">#1 Default</span>
+              </div>
+              <div style="font-size: 11px; color: #9AA9AE; margin-top: 4px;">Calm density • Dark cinematic #090D0F + #28C7D9</div>
+            </div>
+
+            <div class="panel" onclick="set2026Palette('warm_copper', this)" style="padding: 14px; cursor: pointer; border: 1px solid #2E2B26; background: #0D0D0C; border-radius: 10px;">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-size: 13px; font-weight: 700; color: #F5EFE7;">🥈 Warm Charcoal + Copper</span>
+                <span style="font-size: 10px; font-family: var(--font-mono); background: rgba(213,138,91,0.15); color: #D58A5B; padding: 2px 6px; border-radius: 4px;">Luxury</span>
+              </div>
+              <div style="font-size: 11px; color: #A79E94; margin-top: 4px;">Warm near-black #0D0D0C + Copper #D58A5B</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Theme Mode (Dark / Light Adaptive) -->
+        <div>
+          <div style="font-size: 12.5px; font-weight: 600; color: var(--text-muted); margin-bottom: 8px;">Theme Mode</div>
+          <div class="theme-radio-group">
+            <div class="theme-radio-btn" id="themeRadioLight" onclick="setAppTheme('light')"><i data-lucide="sun" style="width: 14px; height: 14px;"></i><span>Adaptive Light</span></div>
+            <div class="theme-radio-btn active" id="themeRadioDark" onclick="setAppTheme('dark')"><i data-lucide="moon" style="width: 14px; height: 14px;"></i><span>Midnight Dark</span></div>
+            <div class="theme-radio-btn" id="themeRadioSystem" onclick="setAppTheme('dark')"><i data-lucide="monitor" style="width: 14px; height: 14px;"></i><span>System</span></div>
+          </div>
+        </div>
+
+        <!-- Accent Color (5-8% UI Precision) -->
+        <div>
+          <div style="font-size: 12.5px; font-weight: 600; color: var(--text-muted); margin-bottom: 8px;">Restrained Accent Color (5-8% Precision)</div>
+          <div style="display: flex; gap: 12px; align-items: center;">
+            <div class="color-dot active" onclick="setAccentColor('#28C7D9', this)" style="background: #28C7D9;" title="Midnight Cyan (Default)"></div>
+            <div class="color-dot" onclick="setAccentColor('#D58A5B', this)" style="background: #D58A5B;" title="Warm Copper"></div>
+            <div class="color-dot" onclick="setAccentColor('#43C98B', this)" style="background: #43C98B;" title="Emerald Mint"></div>
+            <div class="color-dot" onclick="setAccentColor('#3B82F6', this)" style="background: #3B82F6;" title="Electric Blue"></div>
+            <div class="color-dot" onclick="setAccentColor('#8B5CF6', this)" style="background: #8B5CF6;" title="Purple"></div>
+            <div class="color-dot" onclick="setAccentColor('#E6AE55', this)" style="background: #E6AE55;" title="Warm Amber"></div>
+            <div class="color-dot" onclick="setAccentColor('#E16D72', this)" style="background: #E16D72;" title="Soft Crimson"></div>
+          </div>
+        </div>
+
+        <!-- Font Family -->
+        <div>
+          <div style="font-size: 12.5px; font-weight: 600; color: var(--text-muted); margin-bottom: 6px;">Editorial Typography</div>
+          <select id="fontSelector" onchange="changeFontFamily(this.value)" class="setting-input" style="max-width: 320px;">
+            <option value="'Plus Jakarta Sans', 'Inter', sans-serif">Plus Jakarta Sans (2026 SaaS Standard)</option>
+            <option value="'Inter', sans-serif">Inter (Modern Editorial)</option>
+            <option value="'IBM Plex Mono', monospace">IBM Plex Mono (Technical)</option>
+            <option value="system-ui, sans-serif">System Default</option>
+          </select>
+        </div>
+
+        <!-- Compact Mode -->
+        <div class="toggle-switch-row">
+          <div>
+            <div style="font-size: 13.5px; font-weight: 600; color: var(--text-main);">Calm Density Mode</div>
+            <div style="font-size: 12px; color: var(--text-dim);">Optimizes padding & information hierarchy for focus.</div>
+          </div>
+          <input type="checkbox" checked onchange="showToast(this.checked ? 'Calm density enabled' : 'Default spacing enabled', 'info')" style="width: 18px; height: 18px; accent-color: var(--cyan-primary); cursor: pointer;">
+        </div>
+
+        <div>
+          <button type="button" class="btn btn-primary" onclick="showToast('2026 SaaS Appearance settings applied!', 'success', 'Theme Applied')" style="padding: 10px 24px;">Save Appearance</button>
+        </div>
+      </div>
+
+      <!-- ── TAB 8: INTEGRATIONS ──────────────────────────────────────── -->
+      <div id="pane-integrations" class="settings-pane">
+        <div>
+          <div style="font-size: 16px; font-weight: 700; color: var(--text-main); margin-bottom: 4px;">Third-Party Integrations</div>
+          <div style="font-size: 12.5px; color: var(--text-muted);">Connect your external calendars, meeting platforms, and team chat channels.</div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 12px;">
+          <div style="display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; border-radius: 12px; background: var(--bg-input); border: 1px solid var(--border-color);">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <i data-lucide="calendar" style="width: 20px; height: 20px; color: var(--cyan-primary);"></i>
+              <div>
+                <div style="font-size: 13.5px; font-weight: 600; color: var(--text-main);">Google & Apple Calendar Sync</div>
+                <div style="font-size: 11.5px; color: var(--text-muted);">Sync action item due dates directly as calendar events.</div>
+              </div>
+            </div>
+            <span class="status-badge status-badge-completed">Connected</span>
+          </div>
+
+          <div style="display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; border-radius: 12px; background: var(--bg-input); border: 1px solid var(--border-color);">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <i data-lucide="video" style="width: 20px; height: 20px; color: #3B82F6;"></i>
+              <div>
+                <div style="font-size: 13.5px; font-weight: 600; color: var(--text-main);">Google Meet / Zoom URL Ingestion</div>
+                <div style="font-size: 11.5px; color: var(--text-muted);">Direct cloud recording link extraction.</div>
+              </div>
+            </div>
+            <span class="status-badge status-badge-completed">Active</span>
+          </div>
+
+          <div style="display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; border-radius: 12px; background: var(--bg-input); border: 1px solid var(--border-color);">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <i data-lucide="message-square" style="width: 20px; height: 20px; color: #10B981;"></i>
+              <div>
+                <div style="font-size: 13.5px; font-weight: 600; color: var(--text-main);">Slack & Teams Notifications</div>
+                <div style="font-size: 11.5px; color: var(--text-muted);">Post automatic executive summary briefs into channels.</div>
+              </div>
+            </div>
+            <button type="button" class="btn btn-ghost btn-sm" onclick="showToast('Slack webhook connected!', 'success')">Configure</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── TAB 9: BILLING & SUBSCRIPTION ────────────────────────────── -->
+      <div id="pane-billing" class="settings-pane">
+        <div>
+          <div style="font-size: 16px; font-weight: 700; color: var(--text-main); margin-bottom: 4px;">Plan & Billing</div>
+          <div style="font-size: 12.5px; color: var(--text-muted);">Review your current subscription quota and invoice history.</div>
+        </div>
+
+        <div style="padding: 20px; border-radius: 14px; background: var(--bg-input); border: 1px solid var(--border-bright); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+          <div>
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+              <span style="font-size: 16px; font-weight: 700; color: var(--text-main);">Pro Intelligence Plan</span>
+              <span class="status-badge prio-low">Active</span>
+            </div>
+            <div style="font-size: 12.5px; color: var(--text-muted);">Unlimited Whisper transcription, Voice Mood Analysis, and Calendar sync.</div>
+          </div>
+          <button type="button" class="btn btn-primary btn-sm" onclick="showToast('You are already on the highest tier Pro plan!', 'info', 'Pro Active')">Manage Subscription</button>
+        </div>
+
+        <div>
+          <div style="display: flex; justify-content: space-between; font-size: 12.5px; margin-bottom: 6px;">
+            <span style="color: var(--text-muted);">Monthly Processing Quota</span>
+            <span style="font-weight: 600; color: var(--text-main); font-family: var(--font-mono);">42.5 / 100 Hours</span>
+          </div>
+          <div style="height: 6px; border-radius: 4px; background: var(--bg-input); overflow: hidden;">
+            <div style="width: 42.5%; height: 100%; border-radius: 4px; background: var(--cyan-gradient);"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── TAB: API KEYS & USAGE METERING ────────────────────────── -->
+      <div id="pane-api-keys" class="settings-pane">
+        <div>
+          <div style="font-size: 16px; font-weight: 700; color: var(--text-main); margin-bottom: 4px;">Bring Your Own API Keys & Quota Control</div>
+          <div style="font-size: 12.5px; color: var(--text-muted);">Use your personal OpenAI, Groq, or Gemini keys to unlock unlimited processing and manage token costs.</div>
+        </div>
+
+        <!-- Token Usage Meter Card -->
+        <div style="padding: 18px 20px; border-radius: 12px; background: var(--bg-surface-3, #1F151D); border: 1px solid var(--border-color);">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <div>
+              <div style="font-size: 11px; font-family: var(--font-mono); color: var(--amber, #F0917A); text-transform: uppercase;">Realtime Token Meter</div>
+              <div style="font-size: 16px; font-weight: 700; color: var(--text-main); margin-top: 2px;" id="meterTokenCount">Fetching usage...</div>
+            </div>
+            <div style="text-align: right;">
+              <div style="font-size: 11px; font-family: var(--font-mono); color: var(--text-muted);">ESTIMATED COST</div>
+              <div style="font-size: 16px; font-weight: 700; color: #9DC198;" id="meterCostEst">$0.0000</div>
+            </div>
+          </div>
+          <div style="height: 6px; border-radius: 4px; background: var(--bg-input); overflow: hidden; margin-bottom: 6px;">
+            <div id="meterProgressBar" style="width: 15%; height: 100%; border-radius: 4px; background: linear-gradient(90deg, var(--amber, #F0917A), #9DC198); transition: width 0.3s ease;"></div>
+          </div>
+          <div style="display: flex; justify-content: space-between; font-size: 11px; color: var(--text-muted); font-family: var(--font-mono);">
+            <span>Budget Cap: $<span id="meterBudgetCap">25.00</span> / mo</span>
+            <span id="meterBudgetPct">0% Consumed</span>
+          </div>
+        </div>
+
+        <form method="POST" action="/settings/api-keys" style="display: flex; flex-direction: column; gap: 16px;">
+          <div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+              <label style="font-size: 12px; font-weight: 600; color: var(--text-muted);">OpenAI API Key (GPT-4o & Whisper)</label>
+              <span style="font-size: 11px; color: #9DC198; font-family: var(--font-mono);">Encrypted at Rest</span>
+            </div>
+            <div style="position: relative;">
+              <input type="password" name="openai_key" id="settingsOpenAiKey" value="{{ (api_keys_data.keys.openai if api_keys_data and api_keys_data.keys) or '' }}" placeholder="sk-proj-..." class="setting-input" style="padding-right: 40px;">
+              <button type="button" onclick="toggleSettingsPass('settingsOpenAiKey', 'eyeIconOpenAi')" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-muted); cursor: pointer;">
+                <i id="eyeIconOpenAi" data-lucide="eye" style="width: 15px; height: 15px;"></i>
+              </button>
+            </div>
+          </div>
+
+          <div>
+            <label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 6px;">Groq API Key (Ultra-Fast Whisper V3)</label>
+            <input type="password" name="groq_key" value="{{ (api_keys_data.keys.groq if api_keys_data and api_keys_data.keys) or '' }}" placeholder="gsk_..." class="setting-input">
+          </div>
+
+          <div>
+            <label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 6px;">Google Gemini API Key (Gemini 1.5 Pro)</label>
+            <input type="password" name="gemini_key" value="{{ (api_keys_data.keys.gemini if api_keys_data and api_keys_data.keys) or '' }}" placeholder="AIzaSy..." class="setting-input">
+          </div>
+
+          <div>
+            <label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 6px;">Monthly Budget Alert Cap ($ USD)</label>
+            <input type="number" step="1" min="5" max="1000" name="monthly_budget" value="{{ (api_keys_data.monthly_budget if api_keys_data and api_keys_data.monthly_budget) or 25 }}" class="setting-input">
+          </div>
+
+          <div style="margin-top: 8px;">
+            <button type="submit" class="btn btn-amber" style="padding: 10px 24px;">Save Keys & Quotas</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- ── TAB: WEEKLY EMAIL DIGEST ──────────────────────────────────── -->
+      <div id="pane-digest" class="settings-pane">
+        <div>
+          <div style="font-size: 16px; font-weight: 700; color: var(--text-main); margin-bottom: 4px;">Weekly Meeting & Action Digest</div>
+          <div style="font-size: 12.5px; color: var(--text-muted);">Receive a clean weekly briefing summarizing all decisions made, open action items, and team meetings.</div>
+        </div>
+
+        <div style="padding: 20px; border-radius: 12px; background: var(--bg-surface-3, #1F151D); border: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 14px;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <div style="font-weight: 600; font-size: 14px; color: var(--text-main);">Email Digest Delivery</div>
+              <div style="font-size: 12px; color: var(--text-muted);">Dispatches every Monday at 9:00 AM to your account email.</div>
+            </div>
+            <span class="status-badge status-badge-completed">Active</span>
+          </div>
+
+          <div style="display: flex; gap: 10px; margin-top: 6px; flex-wrap: wrap;">
+            <a href="/api/digest/preview" target="_blank" class="btn btn-outline btn-sm" style="display: inline-flex; align-items: center; gap: 6px;">
+              <i data-lucide="eye" style="width: 14px; height: 14px;"></i>
+              <span>Preview HTML Email Digest ↗</span>
+            </a>
+            <button type="button" onclick="sendTestDigest()" class="btn btn-amber btn-sm" style="display: inline-flex; align-items: center; gap: 6px;">
+              <i data-lucide="send" style="width: 14px; height: 14px;"></i>
+              <span>Send Test Briefing</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <script>
+        async function loadUsageMetrics() {
+          try {
+            const res = await fetch('/api/usage-metrics');
+            const data = await res.json();
+            const tokens = data.token_usage || 0;
+            const cost = data.estimated_cost || 0.0;
+            const budget = data.monthly_budget || 25.0;
+            const pct = Math.min(100, Math.round((cost / budget) * 100));
+
+            document.getElementById('meterTokenCount').textContent = Number(tokens).toLocaleString() + ' Tokens';
+            document.getElementById('meterCostEst').textContent = '$' + cost.toFixed(4);
+            document.getElementById('meterBudgetCap').textContent = budget.toFixed(2);
+            document.getElementById('meterBudgetPct').textContent = pct + '% Consumed';
+            document.getElementById('meterProgressBar').style.width = Math.max(5, pct) + '%';
+          } catch(e) {}
+        }
+
+        async function sendTestDigest() {
+          showToast('Generating and dispatching weekly digest...', 'info', 'Digest');
+          try {
+            const res = await fetch('/api/digest/send', { method: 'POST' });
+            const data = await res.json();
+            showToast(data.message || 'Digest sent!', 'success', 'Digest Sent');
+          } catch(e) {
+            showToast('Failed to trigger digest', 'error', 'Error');
+          }
+        }
+        document.addEventListener('DOMContentLoaded', loadUsageMetrics);
+      </script>
+
+    </div>
+
+  </div>
+</div>
+
+<script>
+  function switchSettingsTab(tabName, btn) {
+    // Nav items active state
+    document.querySelectorAll('.settings-nav-item').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+
+    // Panes active state
+    document.querySelectorAll('.settings-pane').forEach(p => p.classList.remove('active'));
+    const targetPane = document.getElementById('pane-' + tabName);
+    if (targetPane) {
+      targetPane.classList.add('active');
+    }
+  }
+
+  function setAppTheme(t) {
+    document.querySelectorAll('.theme-radio-btn').forEach(b => b.classList.remove('active'));
+    if (t === 'light') {
+      document.getElementById('themeRadioLight')?.classList.add('active');
+      document.documentElement.classList.remove('dark');
+      document.documentElement.classList.add('light');
+      localStorage.setItem('ttt_theme', 'light');
+    } else {
+      document.getElementById('themeRadioDark')?.classList.add('active');
+      document.documentElement.classList.add('dark');
+      document.documentElement.classList.remove('light');
+      localStorage.setItem('ttt_theme', 'dark');
+    }
+    fetch('/api/user/theme', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ theme: t })
+    }).catch(() => {});
+    showToast(`Theme switched to ${t.toUpperCase()} and saved in database!`, 'success', 'Theme Saved');
+  }
+
+  function set2026Palette(palette, el) {
+    if (palette === 'midnight_cyan') {
+      document.documentElement.classList.remove('light', 'theme-copper');
+      document.documentElement.classList.add('dark');
+      const dot = document.querySelector('.color-dot[title*="Midnight Cyan"]') || document.querySelector('.color-dot');
+      if (dot) setAccentColor('#28C7D9', dot);
+      localStorage.setItem('ttt_palette', 'midnight_cyan');
+      showToast('Midnight Cyan (2026 Editorial) applied!', 'success', 'Flagship Theme');
+    } else if (palette === 'warm_copper') {
+      document.documentElement.classList.remove('light');
+      document.documentElement.classList.add('dark', 'theme-copper');
+      const dot = document.querySelector('.color-dot[title*="Warm Copper"]');
+      if (dot) setAccentColor('#D58A5B', dot);
+      localStorage.setItem('ttt_palette', 'warm_copper');
+      showToast('Warm Charcoal + Copper luxury theme applied!', 'success', 'Luxury Theme');
+    }
+  }
+
+  function setAccentColor(colorHex, el) {
+    document.querySelectorAll('.color-dot').forEach(d => d.classList.remove('active'));
+    if (el) el.classList.add('active');
+    document.documentElement.style.setProperty('--cyan-primary', colorHex);
+    document.documentElement.style.setProperty('--cyan-gradient', `linear-gradient(135deg, ${colorHex} 0%, #19AFC1 100%)`);
+    localStorage.setItem('ttt_accent', colorHex);
+    fetch('/api/user/theme', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ accent_color: colorHex })
+    }).catch(() => {});
+    showToast(`Accent color saved to database!`, 'success', 'Color Saved');
+  }
+
+  function changeFontFamily(fontValue) {
+    document.body.style.fontFamily = fontValue;
+    localStorage.setItem('ttt_font', fontValue);
+    showToast('Typography updated!', 'success', 'Font Changed');
+  }
+
+  // Restore saved preferences on load & handle deep tab links
+  document.addEventListener('DOMContentLoaded', () => {
+    const savedAccent = localStorage.getItem('ttt_accent');
+    if (savedAccent) {
+      document.documentElement.style.setProperty('--cyan-primary', savedAccent);
+      document.documentElement.style.setProperty('--cyan-gradient', `linear-gradient(135deg, ${savedAccent} 0%, #3B82F6 100%)`);
+    }
+    const savedFont = localStorage.getItem('ttt_font');
+    if (savedFont) {
+      document.body.style.fontFamily = savedFont;
+      const sel = document.getElementById('fontSelector');
+      if (sel) sel.value = savedFont;
+    }
+
+    // Automatically activate tab from URL query param (?tab=security / ?tab=api-keys / ?tab=digest)
+    const urlParams = new URLSearchParams(window.location.search);
+    const tabParam = urlParams.get('tab');
+    if (tabParam) {
+      const targetBtn = document.querySelector(`.settings-nav-item[onclick*="${tabParam}"]`);
+      if (targetBtn) {
+        switchSettingsTab(tabParam, targetBtn);
+      }
+    }
+  });
+
+  function validateSettingsLivePassword() {
+    const val = document.getElementById('settingsNewPass').value;
+    let score = 0;
+    if (val.length >= 6) score++;
+    if (val.length >= 8) score++;
+    if (/[A-Z]/.test(val)) score++;
+    if (/[0-9]/.test(val)) score++;
+    if (/[!@#$%^&*(),.?":{}|<>]/.test(val)) score++;
+
+    const b1 = document.getElementById('sbar1');
+    const b2 = document.getElementById('sbar2');
+    const b3 = document.getElementById('sbar3');
+    const b4 = document.getElementById('sbar4');
+    const badge = document.getElementById('settingsStrengthBadge');
+
+    b1.style.background = 'rgba(255,255,255,0.1)';
+    b2.style.background = 'rgba(255,255,255,0.1)';
+    b3.style.background = 'rgba(255,255,255,0.1)';
+    b4.style.background = 'rgba(255,255,255,0.1)';
+
+    if (val.length === 0) {
+      badge.textContent = 'Enter new password';
+      badge.style.color = 'var(--text-dim)';
+    } else if (score <= 2) {
+      b1.style.background = '#EF4444';
+      badge.textContent = 'Weak';
+      badge.style.color = '#EF4444';
+    } else if (score === 3) {
+      b1.style.background = '#F59E0B';
+      b2.style.background = '#F59E0B';
+      badge.textContent = 'Fair';
+      badge.style.color = '#F59E0B';
+    } else if (score === 4) {
+      b1.style.background = '#06B6D4';
+      b2.style.background = '#06B6D4';
+      b3.style.background = '#06B6D4';
+      badge.textContent = 'Good';
+      badge.style.color = '#06B6D4';
+    } else {
+      b1.style.background = '#10B981';
+      b2.style.background = '#10B981';
+      b3.style.background = '#10B981';
+      b4.style.background = '#10B981';
+      badge.textContent = 'Strong';
+      badge.style.color = '#10B981';
+    }
+
+    validateSettingsMatch();
+  }
+
+  function validateSettingsMatch() {
+    const p1 = document.getElementById('settingsNewPass').value;
+    const p2 = document.getElementById('settingsConfirmPass').value;
+    const msg = document.getElementById('settingsMatchMsg');
+
+    if (!p2) {
+      msg.style.display = 'none';
+      return;
+    }
+
+    msg.style.display = 'block';
+    if (p1 === p2) {
+      msg.textContent = '✔ New passwords match';
+      msg.style.color = '#10B981';
+    } else {
+      msg.textContent = '✖ New passwords do not match';
+      msg.style.color = '#EF4444';
+    }
+  }
+
+  function toggleSettingsPass(inputId, iconId) {
+    const input = document.getElementById(inputId);
+    const icon = document.getElementById(iconId);
+    if (!input || !icon) return;
+    if (input.type === 'password') {
+      input.type = 'text';
+      icon.setAttribute('data-lucide', 'eye-off');
+    } else {
+      input.type = 'password';
+      icon.setAttribute('data-lucide', 'eye');
+    }
+    if (window.lucide) lucide.createIcons();
+  }
+</script>
+{% endblock %}

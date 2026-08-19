@@ -1,0 +1,27 @@
+============================================================
+TALKTOTEXT PRO — MEETING INTELLIGENCE REPORT
+============================================================
+Title:    Sprint Planning & Release Test
+Date:     2026-08-15 04:36:41
+Language: Urdu / English
+Duration: 0 minutes
+------------------------------------------------------------
+
+--- EXECUTIVE SUMMARY ---
+
+Sprint planning summary test.
+
+--- KEY DISCUSSION POINTS ---
+
+• Key point 1
+• Key point 2
+
+--- AGREED DECISIONS ---
+
+✓ Decision 1
+
+--- ACTION ITEMS & DELIVERABLES ---
+
+[Pending] Frontend (Assignee: Ali, Due: Friday)
+
+--- SPEAKER TRANSCRIPT ---

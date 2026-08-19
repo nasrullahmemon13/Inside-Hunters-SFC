@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ meeting.title }} — TalkToText Pro Shared Notes</title>
+
+  <!-- Google Fonts: Fraunces, Inter, IBM Plex Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script>
+    if (typeof lucide === 'undefined') {
+      document.write('<script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"><\/script>');
+    }
+  </script>
+
+  <style>
+    :root {
+      --ink: #09090B;
+      --surface: #111318;
+      --surface-2: #171A21;
+      --surface-3: #1F242E;
+      --line: #252932;
+      --paper: #F8FAFC;
+      --paper-dim: #94A3B8;
+      --signal: #3B82F6;
+      --signal-dim: rgba(59, 130, 246, 0.15);
+      --cyan: #22D3EE;
+      --sage: #22C55E;
+      --sage-dim: rgba(34, 197, 94, 0.15);
+      --coral: #EF4444;
+      --serif: 'Fraunces', serif;
+      --sans: 'Inter', sans-serif;
+      --mono: 'IBM Plex Mono', monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--ink); color: var(--paper); font-family: var(--sans); line-height: 1.5;
+      padding: 40px 20px;
+    }
+    a { color: inherit; text-decoration: none; }
+    .wrap { max-width: 860px; margin: 0 auto; display: flex; flex-direction: column; gap: 24px; }
+    .panel { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 28px; }
+    .status-tag { font-family: var(--mono); font-size: 11px; padding: 4px 10px; border-radius: 100px; border: 1px solid; display: inline-flex; align-items: center; gap: 6px; text-transform: uppercase; }
+    .status-done { color: var(--sage); background: var(--sage-dim); border-color: rgba(111, 168, 143, 0.25); }
+    .btn { font-family: var(--sans); font-size: 13px; font-weight: 600; border-radius: 8px; padding: 8px 14px; border: 1px solid var(--line); background: var(--surface-2); color: var(--paper); display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
+    .btn:hover { background: var(--surface-3); }
+  </style>
+</head>
+<body>
+
+<div class="wrap">
+  <!-- Shared Header -->
+  <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; padding-bottom: 20px; border-bottom: 1px solid var(--line);">
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <svg style="width: 32px; height: 32px;" viewBox="0 0 30 30" fill="none">
+        <rect x="0.5" y="0.5" width="29" height="29" rx="8" fill="#1F2530" stroke="#2A3140"/>
+        <path d="M9 16.5V13.5" stroke="#E8A33D" stroke-width="1.6" stroke-linecap="round"/>
+        <path d="M13 19V11" stroke="#E8A33D" stroke-width="1.6" stroke-linecap="round"/>
+        <path d="M17 21V9" stroke="#ECE9E2" stroke-width="1.6" stroke-linecap="round"/>
+        <path d="M21 16.5V13.5" stroke="#ECE9E2" stroke-width="1.6" stroke-linecap="round"/>
+      </svg>
+      <div>
+        <div style="font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--signal);">TalkToText Pro • Shared Workspace Summary</div>
+        <h1 style="font-family: var(--serif); font-size: 24px; font-weight: 500; color: var(--paper);">{{ meeting.title }}</h1>
+      </div>
+    </div>
+
+    <div style="display: flex; gap: 8px; align-items: center;">
+      <span class="status-tag status-done">{{ meeting.language }}</span>
+      <a href="{{ url_for('export_meeting', meeting_id=meeting.id, format='pdf') }}" class="btn">
+        <i data-lucide="file-text" style="width: 14px; height: 14px; color: var(--coral);"></i>
+        <span>PDF</span>
+      </a>
+      <a href="{{ url_for('export_meeting', meeting_id=meeting.id, format='docx') }}" class="btn">
+        <i data-lucide="file-code-2" style="width: 14px; height: 14px; color: var(--signal);"></i>
+        <span>Word</span>
+      </a>
+      <button onclick="window.print()" class="btn">
+        <i data-lucide="printer" style="width: 14px; height: 14px;"></i>
+        <span>Print</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Executive Summary -->
+  <div class="panel">
+    <div style="font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--signal); margin-bottom: 10px; display: flex; align-items: center; gap: 6px;">
+      <i data-lucide="sparkles" style="width: 14px; height: 14px;"></i>
+      <span>Executive Summary</span>
+    </div>
+    <p style="font-size: 14.5px; line-height: 1.7; color: var(--paper);">{{ meeting.summary }}</p>
+  </div>
+
+  <!-- Key Points & Decisions Grid -->
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 20px;">
+    {% if meeting.key_points %}
+    <div class="panel">
+      <div style="font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--paper-dim); margin-bottom: 12px;">
+        Key Discussion Points
+      </div>
+      <ul style="list-style: none; display: flex; flex-direction: column; gap: 8px; font-size: 13.5px; color: var(--paper);">
+        {% for pt in meeting.key_points %}
+          <li style="display: flex; align-items: flex-start; gap: 8px;">
+            <span style="color: var(--signal);">•</span>
+            <span>{{ pt }}</span>
+          </li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+
+    {% if meeting.decisions %}
+    <div class="panel">
+      <div style="font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--sage); margin-bottom: 12px;">
+        Agreed Decisions
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        {% for dec in meeting.decisions %}
+          <div style="padding: 10px 14px; border-radius: 8px; background: var(--sage-dim); border: 1px solid rgba(111, 168, 143, 0.25); font-size: 13px; color: var(--paper);">
+            ✓ {{ dec }}
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Action Items Table -->
+  {% if meeting.action_items %}
+  <div class="panel" style="padding: 24px;">
+    <div style="font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--signal); margin-bottom: 14px;">
+      Action Items & Deliverables
+    </div>
+    <div style="border: 1px solid var(--line); border-radius: 10px; overflow: hidden; background: var(--surface-2);">
+      <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+        <thead>
+          <tr style="background: var(--surface-3); border-bottom: 1px solid var(--line); text-align: left; font-family: var(--mono); font-size: 10.5px; color: var(--paper-dim); text-transform: uppercase;">
+            <th style="padding: 10px 14px;">Status</th>
+            <th style="padding: 10px 14px;">Deliverable</th>
+            <th style="padding: 10px 14px;">Assignee</th>
+            <th style="padding: 10px 14px;">Due Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in meeting.action_items %}
+            <tr style="border-bottom: 1px solid var(--line);">
+              <td style="padding: 10px 14px;">
+                <span class="status-tag {% if item.status == 'Completed' %}status-done{% else %}{% endif %}" style="{% if item.status != 'Completed' %}color: var(--signal); background: var(--signal-dim); border-color: rgba(232, 163, 61, 0.3);{% endif %}">
+                  {{ item.status }}
+                </span>
+              </td>
+              <td style="padding: 10px 14px; color: var(--paper); font-weight: 500;">{{ item.task }}</td>
+              <td style="padding: 10px 14px; font-family: var(--mono); color: var(--paper-dim);">{{ item.assignee }}</td>
+              <td style="padding: 10px 14px; font-family: var(--mono); color: var(--paper-dim);">{{ item.deadline }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Footer Branding -->
+  <div style="text-align: center; font-size: 12px; color: var(--paper-dim); margin-top: 20px;">
+    Powered by <strong>TalkToText Pro</strong> — AI Meeting Intelligence
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    if (window.lucide) lucide.createIcons();
+  });
+  if (typeof lucide !== 'undefined' && lucide.createIcons) {
+    lucide.createIcons();
+  }
+</script>
+</body>
+</html>

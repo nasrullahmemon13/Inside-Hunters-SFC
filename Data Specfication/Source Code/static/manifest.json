@@ -1,0 +1,47 @@
+{
+  "name": "TalkToText Pro — AI Meeting Intelligence",
+  "short_name": "TalkToText Pro",
+  "description": "Turn every conversation into written records, transcripts, decisions, and action items.",
+  "start_url": "/dashboard",
+  "display": "standalone",
+  "background_color": "#1B1219",
+  "theme_color": "#F0917A",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/static/img/favicon.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/static/img/favicon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "New Meeting Recording",
+      "short_name": "Record",
+      "description": "Start live recording a meeting",
+      "url": "/upload?action=record",
+      "icons": [{ "src": "/static/img/favicon.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Upload Audio",
+      "short_name": "Upload",
+      "description": "Upload pre-recorded audio file",
+      "url": "/upload",
+      "icons": [{ "src": "/static/img/favicon.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Action Items",
+      "short_name": "Tasks",
+      "description": "View open action deliverables",
+      "url": "/action-items",
+      "icons": [{ "src": "/static/img/favicon.png", "sizes": "192x192" }]
+    }
+  ]
+}

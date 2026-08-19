@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Create account — TalkToText Pro</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Work+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1B1219;
+    --panel:#271A24;
+    --panel-2:#31212D;
+    --paper:#F8F1E7;
+    --paper-dim:#C9B7BA;
+    --amber:#F0917A;
+    --gold:#E0AD62;
+    --teal:#9DC198;
+    --line:#4A3540;
+  }
+  html.light{
+    --ink: #FAFAF8;
+    --panel: #FFFFFF;
+    --panel-2: #F3F1EC;
+    --paper: #1B1219;
+    --paper-dim: #6B5E66;
+    --amber: #D96E54;
+    --gold: #B88538;
+    --teal: #4F8049;
+    --line: #E5DDD3;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{
+    background:var(--ink);color:var(--paper);
+    font-family:'Work Sans',sans-serif;-webkit-font-smoothing:antialiased;
+    min-height:100vh;display:flex;flex-direction:column;
+  }
+  a{color:inherit;}
+  .aurora{position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none;}
+  .aurora span{position:absolute;border-radius:50%;filter:blur(90px);opacity:0.5;}
+  .aurora span:nth-child(1){width:600px;height:600px;top:-220px;left:-160px;
+    background:radial-gradient(circle,rgba(240,145,122,0.5),transparent 70%);animation:drift1 26s ease-in-out infinite;}
+  .aurora span:nth-child(2){width:520px;height:520px;bottom:-260px;right:-140px;
+    background:radial-gradient(circle,rgba(157,193,152,0.32),transparent 70%);animation:drift2 32s ease-in-out infinite;}
+  @keyframes drift1{0%,100%{transform:translate(0,0) scale(1);}50%{transform:translate(70px,50px) scale(1.08);}}
+  @keyframes drift2{0%,100%{transform:translate(0,0) scale(1);}50%{transform:translate(-60px,-40px) scale(1.06);}}
+
+  /* NAV */
+  .nav-shell{padding:18px 40px 0;}
+  nav{
+    display:flex;align-items:center;justify-content:space-between;
+    max-width:1180px;margin:0 auto;padding:11px 18px;
+    background:linear-gradient(180deg, rgba(255,255,255,0.07), rgba(255,255,255,0) 40%), rgba(40,28,38,0.46);
+    backdrop-filter:blur(22px) saturate(160%);-webkit-backdrop-filter:blur(22px) saturate(160%);
+    border:1px solid rgba(248,241,231,0.14);border-radius:999px;
+    box-shadow:0 18px 40px rgba(0,0,0,0.32), inset 0 1px 0 rgba(255,255,255,0.10);
+  }
+  .brand{display:flex;align-items:center;gap:9px;font-family:'IBM Plex Mono',monospace;font-size:14.5px;text-decoration:none;}
+  .rec-dot{width:8px;height:8px;border-radius:50%;background:var(--amber);
+    box-shadow:0 0 0 0 rgba(240,145,122,0.5);animation:pulse 2s infinite;}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(240,145,122,0.4);}70%{box-shadow:0 0 0 8px rgba(240,145,122,0);}100%{box-shadow:0 0 0 0 rgba(240,145,122,0);}}
+  .brand b{font-weight:500;}
+  nav .back{font-size:13.5px;color:var(--paper-dim);text-decoration:none;}
+  nav .back:hover{color:var(--paper);}
+
+  /* LAYOUT */
+  main{flex:1;display:grid;grid-template-columns:1fr 460px;gap:0;max-width:1180px;margin:0 auto;
+    width:100%;padding:70px 40px 60px;align-items:center;}
+
+  .showcase{padding-right:60px;}
+  .eyebrow{font-family:'IBM Plex Mono',monospace;font-size:12.5px;letter-spacing:0.08em;color:var(--amber);
+    text-transform:uppercase;margin-bottom:20px;}
+  .showcase h1{font-family:'Instrument Serif',serif;font-size:46px;line-height:1.08;margin-bottom:18px;}
+  .showcase h1 em{font-style:italic;color:var(--amber);}
+  .showcase p{color:var(--paper-dim);font-size:15.5px;line-height:1.6;max-width:400px;margin-bottom:36px;}
+
+  .mini-transcript{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:18px 18px 20px;max-width:400px;}
+  .mini-transcript .head{display:flex;justify-content:space-between;font-family:'IBM Plex Mono',monospace;
+    font-size:11px;color:var(--paper-dim);margin-bottom:14px;}
+  .mini-transcript .head .live{color:var(--amber);display:flex;align-items:center;gap:6px;}
+  .mline{display:flex;gap:10px;font-size:13px;margin-bottom:10px;line-height:1.5;}
+  .mline .who{font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:var(--teal);min-width:52px;}
+  .mline .txt{color:var(--paper-dim);}
+  .quote-mini{margin-top:22px;padding-top:18px;border-top:1px solid var(--line);
+    font-family:'Instrument Serif',serif;font-style:italic;font-size:16px;color:var(--paper-dim);line-height:1.5;}
+  .quote-mini b{font-style:normal;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--paper-dim);
+    display:block;margin-top:8px;letter-spacing:0.02em;}
+
+  /* AUTH CARD */
+  .auth-card{
+    background:linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0) 30%), var(--panel);
+    border:1px solid var(--line);border-radius:16px;padding:34px 32px 30px;
+    box-shadow:0 30px 60px rgba(0,0,0,0.35);
+  }
+  .tabs{display:flex;background:rgba(0,0,0,0.2);border-radius:999px;padding:4px;margin-bottom:28px;}
+  .tabs button{
+    flex:1;padding:9px 0;border:none;background:transparent;color:var(--paper-dim);
+    font-family:'Work Sans',sans-serif;font-size:13.5px;font-weight:600;border-radius:999px;
+    cursor:pointer;transition:all .2s;
+  }
+  .tabs button.active{background:var(--amber);color:#2E140C;}
+  .auth-card h2{font-family:'Instrument Serif',serif;font-size:26px;margin-bottom:6px;}
+  .auth-card .sub{color:var(--paper-dim);font-size:13.5px;margin-bottom:26px;}
+
+  .field{margin-bottom:16px;}
+  .field label{display:block;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.05em;
+    color:var(--paper-dim);text-transform:uppercase;margin-bottom:7px;}
+  .field input{
+    width:100%;background:rgba(0,0,0,0.22);border:1px solid var(--line);border-radius:8px;
+    padding:12px 14px;color:var(--paper);font-family:'Work Sans',sans-serif;font-size:14px;outline:none;
+    transition:border-color .15s;
+  }
+  .field input:focus{border-color:var(--amber);}
+  .field input::placeholder{color:#7c6b6f;}
+  .row-between{display:flex;justify-content:space-between;align-items:center;margin:4px 0 22px;font-size:12.5px;}
+  .remember{display:flex;align-items:center;gap:7px;color:var(--paper-dim);cursor:pointer;}
+  .row-between a{color:var(--amber);text-decoration:none;}
+  .row-between a:hover{text-decoration:underline;}
+
+  .btn{
+    font-family:'Work Sans',sans-serif;font-weight:600;font-size:14px;
+    padding:12px 20px;border-radius:999px;text-decoration:none;border:none;cursor:pointer;
+    display:inline-flex;align-items:center;justify-content:center;gap:8px;width:100%;
+    position:relative;overflow:hidden;transition:all 0.18s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .btn:active{transform:scale(0.97)!important;}
+  .btn-amber{background:var(--amber);color:#2E140C;box-shadow:0 2px 10px rgba(240,145,122,0.28);}
+  .btn-amber:hover{background:#F3A691;color:#2E140C;transform:translateY(-2px);box-shadow:0 5px 22px rgba(240,145,122,0.45);}
+  .btn-amber::after{
+    content:'';position:absolute;top:0;left:-100%;width:60%;height:100%;
+    background:linear-gradient(90deg,transparent,rgba(255,255,255,0.35),transparent);
+    transform:skewX(-20deg);pointer-events:none;transition:none;
+  }
+  .btn-amber:hover::after{left:140%;transition:left 0.55s ease;}
+  .btn-outline{background:transparent;color:var(--paper);border:1px solid var(--line);margin-top:10px;}
+  .btn-outline:hover{background:rgba(255,255,255,0.04);border-color:var(--paper-dim);color:var(--paper);transform:translateY(-2px);box-shadow:0 4px 14px rgba(0,0,0,0.3);}
+
+  @media (prefers-reduced-motion: reduce){
+    .btn,.btn-amber,.btn-outline{transform:none!important;box-shadow:none!important;}
+    .btn-amber::after{display:none!important;}
+  }
+
+  .divider{display:flex;align-items:center;gap:12px;margin:22px 0;color:var(--paper-dim);font-size:12px;
+    font-family:'IBM Plex Mono',monospace;}
+  .divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--line);}
+
+  .switcher{text-align:center;margin-top:22px;font-size:13px;color:var(--paper-dim);}
+  .switcher a{color:var(--amber);text-decoration:none;font-weight:600;}
+  .switcher a:hover{text-decoration:underline;}
+
+  /* Flash Alert */
+  .flash-box{
+    padding:10px 14px;border-radius:8px;font-size:12.5px;margin-bottom:16px;
+    background:rgba(225,109,114,0.18);border:1px solid rgba(225,109,114,0.35);color:#FCA5A5;
+  }
+
+  @media (max-width:920px){
+    main{grid-template-columns:1fr;padding-top:40px;}
+    .showcase{padding-right:0;margin-bottom:44px;}
+    .showcase h1{font-size:36px;}
+  }
+</style>
+</head>
+<body>
+
+<div class="aurora"><span></span><span></span></div>
+
+<div class="nav-shell">
+  <nav>
+    <a class="brand" href="{{ url_for('home') }}"><span class="rec-dot"></span>Talk<b>ToText</b> Pro</a>
+    <a class="back" href="{{ url_for('home') }}">← Back to home</a>
+  </nav>
+</div>
+
+<main>
+  <div class="showcase">
+    <div class="eyebrow">00:00:00 — READY TO RECORD</div>
+    <h1>Welcome back to<br>the <em>written record</em>.</h1>
+    <p>Sign in to pick up where your last meeting left off — transcripts, decisions, and action items are all waiting.</p>
+
+    <div class="mini-transcript">
+      <div class="head"><span>Product Strategy Review</span><span class="live"><span class="rec-dot" style="width:6px;height:6px;"></span>SAVED</span></div>
+      <div class="mline"><span class="who">SARAH</span><span class="txt">Let's lock the Q3 roadmap before we lose the room.</span></div>
+      <div class="mline"><span class="who">DEV</span><span class="txt">Agreed — I'll own the migration timeline.</span></div>
+      <div class="quote-mini">"We stopped assigning a note-taker entirely."<b>MAYA REYES — Head of Product, Fielding</b></div>
+    </div>
+  </div>
+
+  <div class="auth-card">
+    <!-- Flashed Messages -->
+    {% with raw_messages = get_flashed_messages(with_categories=true) %}
+      {% if raw_messages %}
+        {% for cat, msg in raw_messages %}
+          <div class="flash-box">{{ msg }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <div class="tabs">
+      <button id="tab-signin" type="button" onclick="switchTab('signin')">Sign in</button>
+      <button class="active" id="tab-signup" type="button" onclick="switchTab('signup')">Create account</button>
+    </div>
+
+    <!-- SIGN IN PANEL -->
+    <div id="panel-signin" style="display:none;">
+      <h2>Sign in</h2>
+      <div class="sub">Good to see you again.</div>
+      <form method="POST" action="{{ url_for('login') }}">
+        <div class="field"><label>Email</label><input type="email" name="email" required placeholder="sarah@company.com" autocomplete="email"></div>
+        <div class="field"><label>Password</label><input type="password" name="password" required placeholder="••••••••••" autocomplete="current-password"></div>
+        <div class="row-between">
+          <label class="remember"><input type="checkbox" style="accent-color:var(--amber);"> Stay signed in</label>
+          <a href="{{ url_for('forgot_password') }}">Forgot password?</a>
+        </div>
+        <button type="submit" class="btn btn-amber">Sign in →</button>
+      </form>
+      <div class="divider">OR</div>
+      <a href="{{ url_for('google_login') }}" class="btn btn-outline">Continue with Google</a>
+      <div class="switcher">New here? <a href="javascript:void(0)" onclick="switchTab('signup')">Create an account</a></div>
+    </div>
+
+    <!-- CREATE ACCOUNT PANEL -->
+    <div id="panel-signup">
+      <h2>Create account</h2>
+      <div class="sub">Start recording your first meeting free.</div>
+      <form method="POST" action="{{ url_for('register') }}">
+        <div class="field"><label>Full name</label><input type="text" name="name" required placeholder="Sarah Kim"></div>
+        <div class="field"><label>Work email</label><input type="email" name="email" required placeholder="sarah@company.com" autocomplete="email"></div>
+        <div class="field"><label>Password</label><input type="password" name="password" required placeholder="Create a password" autocomplete="new-password"></div>
+        <button type="submit" class="btn btn-amber" style="margin-top:10px;">Create account →</button>
+      </form>
+      <div class="divider">OR</div>
+      <a href="{{ url_for('google_login') }}" class="btn btn-outline">Continue with Google</a>
+      <div class="switcher">Already have an account? <a href="javascript:void(0)" onclick="switchTab('signin')">Sign in</a></div>
+    </div>
+  </div>
+</main>
+
+<script>
+  function switchTab(tab){
+    const isSignin = tab === 'signin';
+    document.getElementById('tab-signin').classList.toggle('active', isSignin);
+    document.getElementById('tab-signup').classList.toggle('active', !isSignin);
+    document.getElementById('panel-signin').style.display = isSignin ? 'block' : 'none';
+    document.getElementById('panel-signup').style.display = isSignin ? 'none' : 'block';
+  }
+</script>
+</body>
+</html>

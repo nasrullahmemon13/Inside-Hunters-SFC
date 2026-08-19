@@ -1,0 +1,20 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//TalkToText Pro//Meeting Deliverables//EN
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+BEGIN:VEVENT
+UID:task-9-1@talktotext.pro
+DTSTAMP:20260818T085730Z
+DTSTART:20260818T085730Z
+DTEND:20260818T085730Z
+SUMMARY:[Action Item] Finalize database (Sara)
+DESCRIPTION:Task: Finalize database\nAssignee: Sara\nDue: Thursday\nMeeting: Product Roadmap & Sprint Sync
+STATUS:CONFIRMED
+BEGIN:VALARM
+TRIGGER:-PT15M
+ACTION:DISPLAY
+DESCRIPTION:Reminder: Finalize database
+END:VALARM
+END:VEVENT
+END:VCALENDAR
