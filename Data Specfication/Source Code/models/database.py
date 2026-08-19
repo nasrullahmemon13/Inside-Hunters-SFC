@@ -12,8 +12,17 @@ from dotenv import load_dotenv
 load_dotenv()
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-DB_DIR = os.path.join(BASE_DIR, "database")
-DB_PATH = os.path.join(DB_DIR, "app.db")
+if os.getenv("VERCEL") == "1":
+    import shutil
+    DB_DIR = "/tmp/database"
+    DB_PATH = os.path.join(DB_DIR, "app.db")
+    orig_db = os.path.join(BASE_DIR, "database", "app.db")
+    if not os.path.exists(DB_PATH) and os.path.exists(orig_db):
+        os.makedirs(DB_DIR, exist_ok=True)
+        shutil.copy2(orig_db, DB_PATH)
+else:
+    DB_DIR = os.path.join(BASE_DIR, "database")
+    DB_PATH = os.path.join(DB_DIR, "app.db")
 
 MONGO_URI = os.getenv("MONGO_URI", "").strip()
 _mongo_client = None

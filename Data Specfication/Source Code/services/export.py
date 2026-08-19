@@ -11,7 +11,10 @@ from docx import Document
 from docx.enum.table import WD_TABLE_ALIGNMENT
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-EXPORT_DIR = os.path.join(BASE_DIR, "exports")
+if os.getenv("VERCEL") == "1":
+    EXPORT_DIR = "/tmp/exports"
+else:
+    EXPORT_DIR = os.path.join(BASE_DIR, "exports")
 
 
 def ensure_export_dir():

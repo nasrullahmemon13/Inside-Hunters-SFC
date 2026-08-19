@@ -38,8 +38,12 @@ app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY", "talktotext_secret_key_super_secure_2026")
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-UPLOAD_FOLDER = os.path.join(BASE_DIR, "uploads")
-EXPORTS_FOLDER = os.path.join(BASE_DIR, "exports")
+if os.getenv("VERCEL") == "1":
+    UPLOAD_FOLDER = "/tmp/uploads"
+    EXPORTS_FOLDER = "/tmp/exports"
+else:
+    UPLOAD_FOLDER = os.path.join(BASE_DIR, "uploads")
+    EXPORTS_FOLDER = os.path.join(BASE_DIR, "exports")
 ALLOWED_EXTENSIONS = {"mp3", "wav", "mp4", "m4a", "ogg", "webm"}
 
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
